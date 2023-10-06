@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://b5hdq360cp25g"]
+
+[ext_resource type="Script" path="res://Scripts/Player.gd" id="1_h8xof"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_w4nrs"]
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_h8xof")
+
+[node name="Head" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+
+[node name="Camera3D" type="Camera3D" parent="Head"]
+
+[node name="RayCast3D" type="RayCast3D" parent="Head/Camera3D"]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_w4nrs")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
