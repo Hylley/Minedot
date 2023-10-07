@@ -1,0 +1,23 @@
+[gd_scene load_steps=2 format=3 uid="uid://cjiuf6vnb1o2d"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_louha"]
+resource_local_to_scene = true
+
+[node name="BreakBlockParticle" type="CPUParticles3D"]
+emitting = false
+amount = 20
+lifetime = 5.0
+one_shot = true
+explosiveness = 1.0
+lifetime_randomness = 1.0
+mesh = SubResource("ArrayMesh_louha")
+emission_shape = 1
+emission_sphere_radius = 1.0
+particle_flag_align_y = true
+particle_flag_rotate_y = true
+direction = Vector3(0, 1, 0)
+spread = 20.0
+gravity = Vector3(0, -20, 0)
+initial_velocity_min = 4.0
+initial_velocity_max = 6.0
+scale_amount_max = 2.0

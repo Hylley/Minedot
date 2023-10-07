@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://c1lkcw0a3su5d"]
+[gd_scene load_steps=2 format=3 uid="uid://blsni71uqwteq"]
 
 [ext_resource type="Script" path="res://Scripts/World/Renderer/Fragment.gd" id="1_u8id4"]
 
