@@ -3,9 +3,9 @@ class_name FragmentManager
 
 const DIMENSIONS := Vector3i(16, 16, 16); @warning_ignore('integer_division')
 const WORLD_OFFSET := Vector3i(-(DIMENSIONS.x / 2), -DIMENSIONS.y, -(DIMENSIONS.z / 2))
-const LOAD_RANGE := 25
+const LOAD_RANGE := 30
 const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top and half at the bottom of the center fragment (aka 7 fragments of height)
-const MAXIMUM_RENDER_THREADS = 5
+const MAXIMUM_RENDER_THREADS = 7
 
 static var fragment_scene := load('res://Scenes/World/Fragment.tscn')
 static var active_fragments := {}
@@ -115,9 +115,9 @@ func instantiate_fragment(world_position : Vector3i) -> Object:
 	if world_position in active_fragments: return
 
 	var new_fragment : Object = fragment_scene.instantiate()
-	new_fragment.cubes = Overworld.get_simple_terrain_data(world_position)
 	add_child(new_fragment)
 	new_fragment.global_position = world_position
+	new_fragment.update_terrain()
 	active_fragments[world_position] = new_fragment
 
 	return new_fragment
@@ -129,14 +129,13 @@ func recycle_inactive_fragment(world_position : Vector3i):
 	var recycled_fragment : Vector3i = inactive_fragments.keys()[0]
 	active_fragments[world_position] = inactive_fragments[recycled_fragment]
 	inactive_fragments.erase(recycled_fragment)
-
 	active_fragments[world_position].global_position = world_position
-	active_fragments[world_position].cubes = Overworld.get_simple_terrain_data(world_position)
+	active_fragments[world_position].update_terrain()
 	active_fragments[world_position].render(thread)
-	active_fragments[world_position].visible = true
+	# thread.wait_to_finish()
 
 func get_render_thread():
-	print('Active threads ', active_threads.size())
+	print('Active threads: ', active_threads.size())
 	if active_threads.size() >= MAXIMUM_RENDER_THREADS: return null
 
 	var new_thread := Thread.new()

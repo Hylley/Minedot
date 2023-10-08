@@ -11,6 +11,9 @@ var mesh : ArrayMesh = null
 var mesh_instance : MeshInstance3D = null
 var rng := RandomNumberGenerator.new()
 
+func update_terrain():
+	cubes = Overworld.get_simple_terrain_data(global_position)
+
 func render(thread = null) -> void:
 	if mesh_instance != null:
 		mesh_instance.queue_free()
@@ -25,7 +28,7 @@ func render(thread = null) -> void:
 		render_cubes(global_position)
 	else:
 		thread.start(render_cubes.bind(global_position))
-		thread.wait_to_finish()
+		# thread.wait_to_finish()
 
 	surface.generate_normals(false)
 	surface.set_material(Cube.MATERIAL)
@@ -34,6 +37,7 @@ func render(thread = null) -> void:
 
 	add_child(mesh_instance)
 	if mesh.get_surface_count() != 0: mesh_instance.create_trimesh_collision()
+	if thread: visible = true
 
 func render_cubes(world_position : Vector3, in_thread := false):
 	for x in cubes.size():
