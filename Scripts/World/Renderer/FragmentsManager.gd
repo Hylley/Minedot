@@ -5,143 +5,113 @@ const DIMENSIONS := Vector3i(16, 16, 16); @warning_ignore('integer_division')
 const WORLD_OFFSET := Vector3i(-(DIMENSIONS.x / 2), -DIMENSIONS.y, -(DIMENSIONS.z / 2))
 const LOAD_RANGE := 30
 const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top and half at the bottom of the center fragment (aka 7 fragments of height)
-const MAXIMUM_RENDER_THREADS = 7
+
+const MAXIMUM_RENDER_THREADS = 7; static var active_render_threads := []
+static var generation_thread : Thread; static var keep_generating = true
 
 static var fragment_scene := load('res://Scenes/World/Fragment.tscn')
 static var active_fragments := {}
-static var inactive_fragments := {}
-static var active_threads := []
+# static var inactive_fragments := {}
 
 @onready var player = get_node('/root/World/Player')
 
 # Decoration
 static var cube_break_particle = load('res://Scenes/World/Decoration/BreakBlockParticle.tscn')
 
+
+# Main methods
+
 func _ready() -> void:
-	var pivot = Vector3i.ZERO
-	var direction : Vector2i = Vector2i(1, 0)
-	var step := 1
-	var steps_in_direction := 1
+	generation_thread = Thread.new()
+	generation_thread.start(world_generation_thread)
 
-	for i in range(LOAD_RANGE):
-		instantiate_fragment(pivot * 16 + WORLD_OFFSET);
-		for j in range(HEIGHT_GROW / 2):
-			instantiate_fragment((pivot + Vector3i(0, j, 0)) * 16 + WORLD_OFFSET)
-			instantiate_fragment((pivot - Vector3i(0, j, 0)) * 16 + WORLD_OFFSET)
+	for _i in range(MAXIMUM_RENDER_THREADS): active_render_threads.append(Thread.new())
 
-		pivot += Vector3i(direction.x, 0, direction.y)
-		steps_in_direction -= 1
-
-		if steps_in_direction == 0:
-			# Change direction and reset steps
-			if direction == Vector2i(1, 0):  # Right
-				direction = Vector2i(0, 1)
-			elif direction == Vector2i(0, 1):
-				direction = Vector2i(-1, 0)
-				step += 1
-			elif direction == Vector2i(-1, 0):  # Left
-				direction = Vector2i(0, -1)
-			elif direction == Vector2i(0, -1):  # Up
-				direction = Vector2i(1, 0)
-				step += 1
-			steps_in_direction = step  # Reset steps for the new direction
-
-	for fragment in active_fragments: active_fragments[fragment].render()
-
-var last_player_fragment_position : Vector3i
-var current_plater_fragment_position : Vector3i
 func _process(_delta : float) -> void:
-	for thread in active_threads:
-		#print(thread.is_alive)
-		if thread.is_alive(): continue
-		active_threads.erase(thread)
-
 	current_plater_fragment_position = FragmentManager.snap_to_grid(player.global_position)
-	if current_plater_fragment_position == last_player_fragment_position: return
 
-	var pivot := current_plater_fragment_position
-	var direction : Vector2i = Vector2i(1, 0)
-	var step := 1
-	var steps_in_direction := 1
+func _exit_tree():
+	keep_generating = false; generation_thread.wait_to_finish()
+	for thread in active_render_threads: if thread.is_alive(): thread.wait_to_finish()
 
-	var keep_active := []
-	for i in range(LOAD_RANGE):
-		keep_active.append(pivot)
-		if not pivot in active_fragments:
-			recycle_inactive_fragment(pivot)
+func world_generation_thread():
+	while keep_generating:
+		if not player_switch_fragment(): continue
 
-		for j in range(HEIGHT_GROW / 2):
-			var top_fragment_position := pivot + Vector3i(0, j, 0) * DIMENSIONS
-			var bot_fragment_position := pivot - Vector3i(0, j, 0) * DIMENSIONS
-			keep_active.append(top_fragment_position)
-			keep_active.append(bot_fragment_position)
+		# Spiral fragment generation
+		var pivot := current_plater_fragment_position
+		var direction : Vector2i = Vector2i(1, 0)
+		var step := 1
+		var steps_in_direction := 1
+		var generate_queue := []
 
-			if not top_fragment_position in active_fragments:
-				recycle_inactive_fragment(top_fragment_position)#.render()
+		# Generate new fragments
+		for i in range(LOAD_RANGE):
+			if not pivot in active_fragments: generate_queue.append(pivot)
 
-			if not bot_fragment_position in active_fragments:
-				recycle_inactive_fragment(bot_fragment_position)#.render()
+			for j in range(int(HEIGHT_GROW / 2.)):
+				var top_fragment_position := pivot + Vector3i(0, j, 0) * DIMENSIONS
+				var bottom_fragment_position := pivot - Vector3i(0, j, 0) * DIMENSIONS
+				if not top_fragment_position in active_fragments: generate_queue.append(top_fragment_position)
+				if not bottom_fragment_position in active_fragments: generate_queue.append(bottom_fragment_position)
 
-		pivot += Vector3i(direction.x, 0, direction.y) * DIMENSIONS
-		steps_in_direction -= 1
+			pivot += Vector3i(direction.x, 0, direction.y) * DIMENSIONS
+			steps_in_direction -= 1
+			if steps_in_direction == 0: # Spiral iteration logic
+				# Change direction and reset steps
+				if direction == Vector2i(1, 0):  # Right
+					direction = Vector2i(0, 1)
+				elif direction == Vector2i(0, 1):
+					direction = Vector2i(-1, 0)
+					step += 1
+				elif direction == Vector2i(-1, 0):  # Left
+					direction = Vector2i(0, -1)
+				elif direction == Vector2i(0, -1):  # Up
+					direction = Vector2i(1, 0)
+					step += 1
+				steps_in_direction = step  # Reset steps for the new direction
 
-		if steps_in_direction == 0:
-			# Change direction and reset steps
-			if direction == Vector2i(1, 0):  # Right
-				direction = Vector2i(0, 1)
-			elif direction == Vector2i(0, 1):
-				direction = Vector2i(-1, 0)
-				step += 1
-			elif direction == Vector2i(-1, 0):  # Left
-				direction = Vector2i(0, -1)
-			elif direction == Vector2i(0, -1):  # Up
-				direction = Vector2i(1, 0)
-				step += 1
-			steps_in_direction = step  # Reset steps for the new direction
+			while generate_queue.size() > 0:
+				var available_thread = get_avaliable_thread()
+				if available_thread == null: continue
 
-	for fragment in active_fragments.keys():
-		if fragment in keep_active: continue
-		inactive_fragments[fragment] = active_fragments[fragment]
-		inactive_fragments[fragment].visible = false
+				var new_fragment = FragmentManager.instantiate_fragment(generate_queue.pop_front())
+				available_thread.start(new_fragment.render())
+				call_deferred('add_child', new_fragment)
 
-		active_fragments.erase(fragment)
+		# Delete the far-away ones
+		for fragment in active_fragments.keys():
+			if fragment in generate_queue: continue
+			active_fragments[fragment].queue_free()
+			active_fragments.erase(fragment)
 
+
+# Abstractions
+
+var current_plater_fragment_position : Vector3i
+var last_player_fragment_position    : Vector3i
+func player_switch_fragment() -> bool:
+	var result := current_plater_fragment_position == last_player_fragment_position
 	last_player_fragment_position = current_plater_fragment_position
+	return result
+
+func get_avaliable_thread():
+	for thread in active_render_threads:
+		if not thread.is_alive(): return thread
+	return null
 
 
-# Fragments methods
+# Fragment manipulation
 
-func instantiate_fragment(world_position : Vector3i) -> Object:
-	if world_position in active_fragments: return
+static func instantiate_fragment(world_position : Vector3i) -> Object:
+	if world_position in active_fragments: print("Error: Fragment already exists at ", world_position)
 
 	var new_fragment : Object = fragment_scene.instantiate()
-	add_child(new_fragment)
-	new_fragment.global_position = world_position
-	new_fragment.update_terrain()
+	new_fragment.set_position(world_position)
+	new_fragment.set_visible(false)
 	active_fragments[world_position] = new_fragment
 
 	return new_fragment
-
-func recycle_inactive_fragment(world_position : Vector3i):
-	if inactive_fragments.size() <= 0: return
-	var thread = get_render_thread(); if thread == null: return
-
-	var recycled_fragment : Vector3i = inactive_fragments.keys()[0]
-	active_fragments[world_position] = inactive_fragments[recycled_fragment]
-	inactive_fragments.erase(recycled_fragment)
-	active_fragments[world_position].global_position = world_position
-	active_fragments[world_position].update_terrain()
-	active_fragments[world_position].render(thread)
-	# thread.wait_to_finish()
-
-func get_render_thread():
-	print('Active threads: ', active_threads.size())
-	if active_threads.size() >= MAXIMUM_RENDER_THREADS: return null
-
-	var new_thread := Thread.new()
-	active_threads.append(new_thread)
-
-	return new_thread
 
 static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
 	return Vector3i(floor(Vector3(reference_position - WORLD_OFFSET) / Vector3(DIMENSIONS)) * Vector3(DIMENSIONS)) + WORLD_OFFSET

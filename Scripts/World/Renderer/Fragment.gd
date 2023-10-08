@@ -14,7 +14,7 @@ var rng := RandomNumberGenerator.new()
 func update_terrain():
 	cubes = Overworld.get_simple_terrain_data(global_position)
 
-func render(thread = null) -> void:
+func render(is_in_thread := true) -> void:
 	if mesh_instance != null:
 		mesh_instance.queue_free()
 		mesh_instance = null
@@ -24,11 +24,10 @@ func render(thread = null) -> void:
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_smooth_group(-1)
 
-	if not thread:
-		render_cubes(global_position)
-	else:
-		thread.start(render_cubes.bind(global_position))
-		# thread.wait_to_finish()
+	for x in cubes.size():
+		for y in cubes[x].size():
+			for z in cubes[x][y].size():
+				render_cube(cubes[x][y][z], Vector3i(x, y, z), position)
 
 	surface.generate_normals(false)
 	surface.set_material(Cube.MATERIAL)
@@ -37,40 +36,33 @@ func render(thread = null) -> void:
 
 	add_child(mesh_instance)
 	if mesh.get_surface_count() != 0: mesh_instance.create_trimesh_collision()
-	if thread: visible = true
 
-func render_cubes(world_position : Vector3, in_thread := false):
-	for x in cubes.size():
-		for y in cubes[x].size():
-			for z in cubes[x][y].size():
-				render_cube(cubes[x][y][z], Vector3i(x, y, z), world_position, in_thread)
-
-func render_cube(cube_state : Cube.State, relative_position : Vector3i, world_position : Vector3, in_thread := false) -> void:
+func render_cube(cube_state : Cube.State, relative_position : Vector3i, world_position : Vector3) -> void:
 	if cube_state == null or cube_state == Cube.State.air:
 		return
 
 	if is_transparent(relative_position + Vector3i(0, 1, 0), world_position):
 		create_face(Cube.TOP_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position, in_thread)
+					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position)
 	if is_transparent(relative_position - Vector3i(0, 1, 0), world_position):
 		create_face(Cube.BOTTOM_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position, in_thread)
+					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position)
 
 	if is_transparent(relative_position + Vector3i(1, 0, 0), world_position):
 		create_face(Cube.RIGHT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position, in_thread)
+					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position)
 	if is_transparent(relative_position - Vector3i(1, 0, 0), world_position):
 		create_face(Cube.LEFT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position, in_thread)
+					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position)
 
 	if is_transparent(relative_position + Vector3i(0, 0, 1), world_position):
 		create_face(Cube.FRONT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position, in_thread)
+					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position)
 	if is_transparent(relative_position - Vector3i(0, 0, 1), world_position):
 		create_face(Cube.BACK_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position, in_thread)
+					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position)
 
-func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool, world_position : Vector3, in_thread := false) -> void:
+func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool, world_position : Vector3) -> void:
 	var a : Vector3i = Cube.VERTICES[respective_vertices[0]] + relative_position
 	var b : Vector3i = Cube.VERTICES[respective_vertices[1]] + relative_position
 	var c : Vector3i = Cube.VERTICES[respective_vertices[2]] + relative_position
