@@ -11,7 +11,7 @@ var mesh : ArrayMesh = null
 var mesh_instance : MeshInstance3D = null
 var rng := RandomNumberGenerator.new()
 
-func render() -> void:
+func render(thread = null) -> void:
 	if mesh_instance != null:
 		mesh_instance.queue_free()
 		mesh_instance = null
@@ -24,6 +24,7 @@ func render() -> void:
 	for x in cubes.size():
 		for y in cubes[x].size():
 			for z in cubes[x][y].size():
+				if thread: thread.start(render_cube.bind(cubes[x][y][z], Vector3i(x, y, z), true))
 				render_cube(cubes[x][y][z], Vector3i(x, y, z))
 
 	surface.generate_normals(false)
@@ -34,42 +35,32 @@ func render() -> void:
 	add_child(mesh_instance)
 	if mesh.get_surface_count() != 0: mesh_instance.create_trimesh_collision()
 
-func render_cube(cube_state : Cube.State, relative_position : Vector3i) -> void:
+func render_cube(cube_state : Cube.State, relative_position : Vector3i, in_thread := false) -> void:
 	if cube_state == null or cube_state == Cube.State.air:
 		return
 
 	if is_transparent(relative_position + Vector3i(0, 1, 0)):
 		create_face(Cube.TOP_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y])
+					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], in_thread)
 	if is_transparent(relative_position - Vector3i(0, 1, 0)):
 		create_face(Cube.BOTTOM_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y])
+					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], in_thread)
 
 	if is_transparent(relative_position + Vector3i(1, 0, 0)):
 		create_face(Cube.RIGHT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x])
+					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], in_thread)
 	if is_transparent(relative_position - Vector3i(1, 0, 0)):
 		create_face(Cube.LEFT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x])
+					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], in_thread)
 
 	if is_transparent(relative_position + Vector3i(0, 0, 1)):
 		create_face(Cube.FRONT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z])
+					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], in_thread)
 	if is_transparent(relative_position - Vector3i(0, 0, 1)):
 		create_face(Cube.BACK_FACE, relative_position,
 					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z])
 
-func is_transparent(relative_position : Vector3i) -> bool:
-	if Fragment.is_out_of_bounds(relative_position):
-		return Cube.MAP[FragmentManager.get_global_cube_state(Vector3i(global_position) + relative_position)][Cube.Details.is_transparent]
-	return Cube.MAP[cubes[relative_position.x][relative_position.y][relative_position.z]][Cube.Details.is_transparent]
-
-static func is_out_of_bounds(relative_position : Vector3i) -> bool:
-	return relative_position.x < 0 or relative_position.x >= FragmentManager.DIMENSIONS.x or \
-	   relative_position.y < 0 or relative_position.y >= FragmentManager.DIMENSIONS.y or \
-	   relative_position.z < 0 or relative_position.z >= FragmentManager.DIMENSIONS.z
-
-func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool) -> void:
+func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool, in_thread := false) -> void:
 	var a : Vector3i = Cube.VERTICES[respective_vertices[0]] + relative_position
 	var b : Vector3i = Cube.VERTICES[respective_vertices[1]] + relative_position
 	var c : Vector3i = Cube.VERTICES[respective_vertices[2]] + relative_position
@@ -99,6 +90,16 @@ func rotate_uv(default_uv_array : Array, relative_position : Vector3i) -> Array:
 		rotated_uvs.reverse()
 
 	return rotated_uvs
+
+func is_transparent(relative_position : Vector3i) -> bool:
+	if Fragment.is_out_of_bounds(relative_position):
+		return Cube.MAP[FragmentManager.get_global_cube_state(Vector3i(global_position) + relative_position)][Cube.Details.is_transparent]
+	return Cube.MAP[cubes[relative_position.x][relative_position.y][relative_position.z]][Cube.Details.is_transparent]
+
+static func is_out_of_bounds(relative_position : Vector3i) -> bool:
+	return relative_position.x < 0 or relative_position.x >= FragmentManager.DIMENSIONS.x or \
+	   relative_position.y < 0 or relative_position.y >= FragmentManager.DIMENSIONS.y or \
+	   relative_position.z < 0 or relative_position.z >= FragmentManager.DIMENSIONS.z
 
 func change_cube(local_position : Vector3i, cube_state : Cube.State) -> void:
 	if cube_state == Cube.State.air: generate_break_cpu_particle(global_position + Vector3(local_position) + Vector3(.5, .5, .5), cubes[local_position.x][local_position.y][local_position.z])

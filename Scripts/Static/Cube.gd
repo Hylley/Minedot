@@ -27,7 +27,8 @@ enum State
 	air,
 	grass,
 	dirt,
-	stone
+	stone,
+	glass
 }
 
 enum Details
@@ -74,5 +75,13 @@ const MAP := \
 		Details.left_texture : Vector2i(0, 1), Details.right_texture : Vector2i(0, 1),
 		Details.front_texture: Vector2i(0, 1), Details.back_texture  : Vector2i(0, 1),
 		Details.rotate_uv_x: true, Details.rotate_uv_y: true, Details.rotate_uv_z: true
+	},
+	State.glass:
+	{
+		Details.is_transparent : true,
+		Details.top_texture  : Vector2i(1, 1), Details.bottom_texture: Vector2i(1, 1),
+		Details.left_texture : Vector2i(1, 1), Details.right_texture : Vector2i(1, 1),
+		Details.front_texture: Vector2i(1, 1), Details.back_texture  : Vector2i(1, 1),
+		Details.rotate_uv_x: false, Details.rotate_uv_y: false, Details.rotate_uv_z: false
 	}
 }

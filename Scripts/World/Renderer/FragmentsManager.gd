@@ -5,9 +5,10 @@ const DIMENSIONS := Vector3i(16, 16, 16); @warning_ignore('integer_division')
 const WORLD_OFFSET := Vector3i(-(DIMENSIONS.x / 2), -DIMENSIONS.y, -(DIMENSIONS.z / 2))
 const LOAD_RANGE := 25
 const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top and half at the bottom of the center fragment (aka 7 fragments of height)
+const MAXIMUM_RENDER_THREADS = 5
 
 static var fragment_scene := load('res://Scenes/World/Fragment.tscn')
-static var frgment_render_thread = Thread.new()
+static var fragment_render_threads := []
 static var active_fragments := {}
 static var inactive_fragments := {}
 
@@ -102,6 +103,9 @@ func _process(_delta : float) -> void:
 
 	last_player_fragment_position = current_plater_fragment_position
 
+
+# Fragments methods
+
 func instantiate_fragment(world_position : Vector3i) -> Object:
 	if world_position in active_fragments: return
 
@@ -115,6 +119,7 @@ func instantiate_fragment(world_position : Vector3i) -> Object:
 
 func recycle_inactive_fragment(world_position : Vector3i):
 	if inactive_fragments.size() <= 0: return
+	var thread = get_render_thread(); if thread == null: return
 
 	var recycled_fragment : Vector3i = inactive_fragments.keys()[0]
 	active_fragments[world_position] = inactive_fragments[recycled_fragment]
@@ -122,10 +127,26 @@ func recycle_inactive_fragment(world_position : Vector3i):
 
 	active_fragments[world_position].global_position = world_position
 	active_fragments[world_position].cubes = Overworld.get_simple_terrain_data(world_position)
-	frgment_render_thread.start(active_fragments[world_position].render)
-	frgment_render_thread.wait_to_finish()
+	active_fragments[world_position].render(thread)
 	active_fragments[world_position].visible = true
 
+func get_render_thread():
+	if fragment_render_threads.size() >= MAXIMUM_RENDER_THREADS: return null
+
+	var new_thread := Thread.new()
+	fragment_render_threads.append(new_thread)
+
+	return new_thread
+
+static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
+	return Vector3i(floor(Vector3(reference_position - WORLD_OFFSET) / Vector3(DIMENSIONS)) * Vector3(DIMENSIONS)) + WORLD_OFFSET
+
+static func update_fragment_if_exists(fragment_position : Vector3i):
+	if not fragment_position in active_fragments: return
+	active_fragments[fragment_position].render()
+
+
+# Cube methods
 
 static func place_cube(fragment_position : Vector3i, cube_global_position : Vector3i, cube_state : Cube.State) -> void:
 	var cube_relative_position := cube_global_position - fragment_position
@@ -162,18 +183,9 @@ static func place_cube(fragment_position : Vector3i, cube_global_position : Vect
 static func break_cube(fragment_position : Vector3, focusing : Vector3i) -> void:
 	FragmentManager.place_cube(fragment_position, focusing, Cube.State.air)
 
-static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
-	return Vector3i(floor(Vector3(reference_position - WORLD_OFFSET) / Vector3(DIMENSIONS)) * Vector3(DIMENSIONS)) + WORLD_OFFSET
-
-	# return snapped_position if snapped_position in active_fragments else Vector3i.ZERO
-
 static func get_global_cube_state(cube_global_position : Vector3i) -> Cube.State:
 	var predict := FragmentManager.snap_to_grid(cube_global_position)
 	if not predict in active_fragments: return Cube.State.air
 
 	var relative_position : Vector3i = (predict - cube_global_position).abs()
 	return active_fragments[predict].cubes[relative_position.x][relative_position.y][relative_position.z]
-
-static func update_fragment_if_exists(fragment_position : Vector3i):
-	if not fragment_position in active_fragments: return
-	active_fragments[fragment_position].render()
