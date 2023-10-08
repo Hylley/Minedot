@@ -1,9 +1,6 @@
 extends StaticBody3D
 class_name Fragment
 
-# relative_position -> positions inside the fragment (0 up to 15);
-# global_position	-> global world positions;
-
 # Rendering
 var cubes := []
 var surface := SurfaceTool.new()
@@ -11,10 +8,12 @@ var mesh : ArrayMesh = null
 var mesh_instance : MeshInstance3D = null
 var rng := RandomNumberGenerator.new()
 
-func update_terrain():
-	cubes = Overworld.get_simple_terrain_data(global_position)
+var world_position : Vector3i
 
-func render(is_in_thread := true) -> void:
+func update_terrain(new_world_position : Vector3i):
+	cubes = Overworld.get_simple_terrain_data(new_world_position)
+
+func render():
 	if mesh_instance != null:
 		mesh_instance.queue_free()
 		mesh_instance = null
@@ -27,7 +26,7 @@ func render(is_in_thread := true) -> void:
 	for x in cubes.size():
 		for y in cubes[x].size():
 			for z in cubes[x][y].size():
-				render_cube(cubes[x][y][z], Vector3i(x, y, z), position)
+				render_cube(cubes[x][y][z], Vector3i(x, y, z))
 
 	surface.generate_normals(false)
 	surface.set_material(Cube.MATERIAL)
@@ -35,34 +34,36 @@ func render(is_in_thread := true) -> void:
 	mesh_instance.set_mesh(mesh)
 
 	add_child(mesh_instance)
-	if mesh.get_surface_count() != 0: mesh_instance.create_trimesh_collision()
+	if mesh.get_surface_count() != 0: mesh_instance.call_deferred('create_trimesh_collision')
 
-func render_cube(cube_state : Cube.State, relative_position : Vector3i, world_position : Vector3) -> void:
+	visible = true
+
+func render_cube(cube_state : Cube.State, relative_position : Vector3i) -> void:
 	if cube_state == null or cube_state == Cube.State.air:
 		return
 
-	if is_transparent(relative_position + Vector3i(0, 1, 0), world_position):
+	if is_transparent(relative_position + Vector3i(0, 1, 0)):
 		create_face(Cube.TOP_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position)
-	if is_transparent(relative_position - Vector3i(0, 1, 0), world_position):
+					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y])
+	if is_transparent(relative_position - Vector3i(0, 1, 0)):
 		create_face(Cube.BOTTOM_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position)
+					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y])
 
-	if is_transparent(relative_position + Vector3i(1, 0, 0), world_position):
+	if is_transparent(relative_position + Vector3i(1, 0, 0)):
 		create_face(Cube.RIGHT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position)
-	if is_transparent(relative_position - Vector3i(1, 0, 0), world_position):
+					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x])
+	if is_transparent(relative_position - Vector3i(1, 0, 0)):
 		create_face(Cube.LEFT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position)
+					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x])
 
-	if is_transparent(relative_position + Vector3i(0, 0, 1), world_position):
+	if is_transparent(relative_position + Vector3i(0, 0, 1)):
 		create_face(Cube.FRONT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position)
-	if is_transparent(relative_position - Vector3i(0, 0, 1), world_position):
+					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z])
+	if is_transparent(relative_position - Vector3i(0, 0, 1)):
 		create_face(Cube.BACK_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position)
+					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z])
 
-func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool, world_position : Vector3) -> void:
+func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool) -> void:
 	var a : Vector3i = Cube.VERTICES[respective_vertices[0]] + relative_position
 	var b : Vector3i = Cube.VERTICES[respective_vertices[1]] + relative_position
 	var c : Vector3i = Cube.VERTICES[respective_vertices[2]] + relative_position
@@ -76,12 +77,12 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 		offset + size,
 		offset + Vector2(size.x, 0)
 	]
-	uv = rotate_uv(uv, relative_position, world_position) if rotate_texture else uv
+	uv = rotate_uv(uv, relative_position) if rotate_texture else uv
 
 	surface.add_triangle_fan(([a, b, c]), ([uv[0], uv[1], uv[2]]))
 	surface.add_triangle_fan(([a, c, d]), ([uv[0], uv[2], uv[3]]))
 
-func rotate_uv(default_uv_array : Array, relative_position : Vector3i, world_position : Vector3) -> Array:
+func rotate_uv(default_uv_array : Array, relative_position : Vector3i) -> Array:
 	rng.seed = int(world_position.length_squared() + relative_position.length_squared())
 	var pivot := rng.randi() % default_uv_array.size() # Chose a random index from the array
 	var rotated_uvs := default_uv_array.slice(pivot, default_uv_array.size()) # Create a new split array with the random index item as the first
@@ -93,7 +94,7 @@ func rotate_uv(default_uv_array : Array, relative_position : Vector3i, world_pos
 
 	return rotated_uvs
 
-func is_transparent(relative_position : Vector3i, world_position : Vector3) -> bool:
+func is_transparent(relative_position : Vector3i) -> bool:
 	if Fragment.is_out_of_bounds(relative_position):
 		return Cube.MAP[FragmentManager.get_global_cube_state(Vector3i(world_position) + relative_position)][Cube.Details.is_transparent]
 	return Cube.MAP[cubes[relative_position.x][relative_position.y][relative_position.z]][Cube.Details.is_transparent]

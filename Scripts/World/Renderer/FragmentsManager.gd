@@ -9,7 +9,7 @@ const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top an
 const MAXIMUM_RENDER_THREADS = 7; static var active_render_threads := []
 static var generation_thread : Thread; static var keep_generating = true
 
-static var fragment_scene := load('res://Scenes/World/Fragment.tscn')
+static var fragment_scene := preload('res://Scenes/World/Fragment.tscn')
 static var active_fragments := {}
 # static var inactive_fragments := {}
 
@@ -28,11 +28,11 @@ func _ready() -> void:
 	for _i in range(MAXIMUM_RENDER_THREADS): active_render_threads.append(Thread.new())
 
 func _process(_delta : float) -> void:
-	current_plater_fragment_position = FragmentManager.snap_to_grid(player.global_position)
+	current_plater_fragment_position = FragmentManager.snap_to_grid(player.get_global_position())
 
 func _exit_tree():
-	keep_generating = false; generation_thread.wait_to_finish()
-	for thread in active_render_threads: if thread.is_alive(): thread.wait_to_finish()
+	keep_generating = false;
+	generation_thread.wait_to_finish()
 
 func world_generation_thread():
 	while keep_generating:
@@ -44,14 +44,16 @@ func world_generation_thread():
 		var step := 1
 		var steps_in_direction := 1
 		var generate_queue := []
+		var keep_loaded := []
 
 		# Generate new fragments
 		for i in range(LOAD_RANGE):
+			keep_loaded.append(pivot)
 			if not pivot in active_fragments: generate_queue.append(pivot)
 
 			for j in range(int(HEIGHT_GROW / 2.)):
-				var top_fragment_position := pivot + Vector3i(0, j, 0) * DIMENSIONS
-				var bottom_fragment_position := pivot - Vector3i(0, j, 0) * DIMENSIONS
+				var top_fragment_position := pivot + Vector3i(0, j + 1, 0) * DIMENSIONS; keep_loaded.append(top_fragment_position)
+				var bottom_fragment_position := pivot - Vector3i(0, j + 1, 0) * DIMENSIONS; keep_loaded.append(bottom_fragment_position)
 				if not top_fragment_position in active_fragments: generate_queue.append(top_fragment_position)
 				if not bottom_fragment_position in active_fragments: generate_queue.append(bottom_fragment_position)
 
@@ -71,17 +73,24 @@ func world_generation_thread():
 					step += 1
 				steps_in_direction = step  # Reset steps for the new direction
 
-			while generate_queue.size() > 0:
+			while generate_queue.size() > 0 and keep_generating:
 				var available_thread = get_avaliable_thread()
+
 				if available_thread == null: continue
 
-				var new_fragment = FragmentManager.instantiate_fragment(generate_queue.pop_front())
-				available_thread.start(new_fragment.render())
-				call_deferred('add_child', new_fragment)
+				var fragment_world_position : Vector3i = generate_queue.pop_front()
+				var fragment_instance := FragmentManager.instantiate_fragment(fragment_world_position)
+				available_thread.start(fragment_instance.update_terrain.bind(fragment_world_position))
+				available_thread.wait_to_finish()
+				available_thread.start(fragment_instance.render)
+				available_thread.wait_to_finish()
+				fragment_instance.set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
+
+				call_deferred('add_child', fragment_instance)
 
 		# Delete the far-away ones
 		for fragment in active_fragments.keys():
-			if fragment in generate_queue: continue
+			if fragment in keep_loaded: continue
 			active_fragments[fragment].queue_free()
 			active_fragments.erase(fragment)
 
@@ -91,13 +100,13 @@ func world_generation_thread():
 var current_plater_fragment_position : Vector3i
 var last_player_fragment_position    : Vector3i
 func player_switch_fragment() -> bool:
-	var result := current_plater_fragment_position == last_player_fragment_position
+	var result := current_plater_fragment_position != last_player_fragment_position
 	last_player_fragment_position = current_plater_fragment_position
 	return result
 
 func get_avaliable_thread():
 	for thread in active_render_threads:
-		if not thread.is_alive(): return thread
+		if not thread.is_alive() and not thread.is_started(): return thread
 	return null
 
 
@@ -107,6 +116,7 @@ static func instantiate_fragment(world_position : Vector3i) -> Object:
 	if world_position in active_fragments: print("Error: Fragment already exists at ", world_position)
 
 	var new_fragment : Object = fragment_scene.instantiate()
+	new_fragment.set_as_top_level(true)
 	new_fragment.set_position(world_position)
 	new_fragment.set_visible(false)
 	active_fragments[world_position] = new_fragment
@@ -162,5 +172,5 @@ static func get_global_cube_state(cube_global_position : Vector3i) -> Cube.State
 	var predict := FragmentManager.snap_to_grid(cube_global_position)
 	if not predict in active_fragments: return Cube.State.air
 
-	var relative_position : Vector3i = (predict - cube_global_position).abs()
+	var relative_position : Vector3i = cube_global_position - predict
 	return active_fragments[predict].cubes[relative_position.x][relative_position.y][relative_position.z]

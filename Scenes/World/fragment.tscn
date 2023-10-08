@@ -3,6 +3,8 @@
 [ext_resource type="Script" path="res://Scripts/World/Renderer/Fragment.gd" id="1_u8id4"]
 
 [node name="Fragment" type="StaticBody3D"]
+process_thread_group = 2
+process_thread_group_order = 0
+process_thread_messages = 0
+input_ray_pickable = false
 script = ExtResource("1_u8id4")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="."]

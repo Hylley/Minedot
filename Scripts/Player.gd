@@ -106,7 +106,7 @@ func handle_interaction() -> void:
 			FragmentManager.break_cube(raycast.get_collider().global_position, focusing)
 
 		if Input.is_action_just_pressed('Interact'):
-			FragmentManager.place_cube(raycast.get_collider().global_position, focusing + norma, Cube.State.glass)
+			FragmentManager.place_cube(raycast.get_collider().global_position, focusing + norma, Cube.State.grass)
 
 	else:
 		cube_highlight.visible = false
