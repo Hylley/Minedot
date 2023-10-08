@@ -8,9 +8,9 @@ const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top an
 const MAXIMUM_RENDER_THREADS = 5
 
 static var fragment_scene := load('res://Scenes/World/Fragment.tscn')
-static var fragment_render_threads := []
 static var active_fragments := {}
 static var inactive_fragments := {}
+static var active_threads := []
 
 @onready var player = get_node('/root/World/Player')
 
@@ -51,6 +51,11 @@ func _ready() -> void:
 var last_player_fragment_position : Vector3i
 var current_plater_fragment_position : Vector3i
 func _process(_delta : float) -> void:
+	for thread in active_threads:
+		#print(thread.is_alive)
+		if thread.is_alive(): continue
+		active_threads.erase(thread)
+
 	current_plater_fragment_position = FragmentManager.snap_to_grid(player.global_position)
 	if current_plater_fragment_position == last_player_fragment_position: return
 
@@ -131,10 +136,11 @@ func recycle_inactive_fragment(world_position : Vector3i):
 	active_fragments[world_position].visible = true
 
 func get_render_thread():
-	if fragment_render_threads.size() >= MAXIMUM_RENDER_THREADS: return null
+	print('Active threads ', active_threads.size())
+	if active_threads.size() >= MAXIMUM_RENDER_THREADS: return null
 
 	var new_thread := Thread.new()
-	fragment_render_threads.append(new_thread)
+	active_threads.append(new_thread)
 
 	return new_thread
 

@@ -21,11 +21,11 @@ func render(thread = null) -> void:
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_smooth_group(-1)
 
-	for x in cubes.size():
-		for y in cubes[x].size():
-			for z in cubes[x][y].size():
-				if thread: thread.start(render_cube.bind(cubes[x][y][z], Vector3i(x, y, z), true))
-				render_cube(cubes[x][y][z], Vector3i(x, y, z))
+	if not thread:
+		render_cubes(global_position)
+	else:
+		thread.start(render_cubes.bind(global_position))
+		thread.wait_to_finish()
 
 	surface.generate_normals(false)
 	surface.set_material(Cube.MATERIAL)
@@ -35,32 +35,38 @@ func render(thread = null) -> void:
 	add_child(mesh_instance)
 	if mesh.get_surface_count() != 0: mesh_instance.create_trimesh_collision()
 
-func render_cube(cube_state : Cube.State, relative_position : Vector3i, in_thread := false) -> void:
+func render_cubes(world_position : Vector3, in_thread := false):
+	for x in cubes.size():
+		for y in cubes[x].size():
+			for z in cubes[x][y].size():
+				render_cube(cubes[x][y][z], Vector3i(x, y, z), world_position, in_thread)
+
+func render_cube(cube_state : Cube.State, relative_position : Vector3i, world_position : Vector3, in_thread := false) -> void:
 	if cube_state == null or cube_state == Cube.State.air:
 		return
 
-	if is_transparent(relative_position + Vector3i(0, 1, 0)):
+	if is_transparent(relative_position + Vector3i(0, 1, 0), world_position):
 		create_face(Cube.TOP_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], in_thread)
-	if is_transparent(relative_position - Vector3i(0, 1, 0)):
+					Cube.MAP[cube_state][Cube.Details.top_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position, in_thread)
+	if is_transparent(relative_position - Vector3i(0, 1, 0), world_position):
 		create_face(Cube.BOTTOM_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], in_thread)
+					Cube.MAP[cube_state][Cube.Details.bottom_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_y], world_position, in_thread)
 
-	if is_transparent(relative_position + Vector3i(1, 0, 0)):
+	if is_transparent(relative_position + Vector3i(1, 0, 0), world_position):
 		create_face(Cube.RIGHT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], in_thread)
-	if is_transparent(relative_position - Vector3i(1, 0, 0)):
+					Cube.MAP[cube_state][Cube.Details.right_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position, in_thread)
+	if is_transparent(relative_position - Vector3i(1, 0, 0), world_position):
 		create_face(Cube.LEFT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], in_thread)
+					Cube.MAP[cube_state][Cube.Details.left_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_x], world_position, in_thread)
 
-	if is_transparent(relative_position + Vector3i(0, 0, 1)):
+	if is_transparent(relative_position + Vector3i(0, 0, 1), world_position):
 		create_face(Cube.FRONT_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], in_thread)
-	if is_transparent(relative_position - Vector3i(0, 0, 1)):
+					Cube.MAP[cube_state][Cube.Details.front_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position, in_thread)
+	if is_transparent(relative_position - Vector3i(0, 0, 1), world_position):
 		create_face(Cube.BACK_FACE, relative_position,
-					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z])
+					Cube.MAP[cube_state][Cube.Details.back_texture], Cube.MAP[cube_state][Cube.Details.rotate_uv_z], world_position, in_thread)
 
-func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool, in_thread := false) -> void:
+func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool, world_position : Vector3, in_thread := false) -> void:
 	var a : Vector3i = Cube.VERTICES[respective_vertices[0]] + relative_position
 	var b : Vector3i = Cube.VERTICES[respective_vertices[1]] + relative_position
 	var c : Vector3i = Cube.VERTICES[respective_vertices[2]] + relative_position
@@ -74,13 +80,13 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 		offset + size,
 		offset + Vector2(size.x, 0)
 	]
-	uv = rotate_uv(uv, relative_position) if rotate_texture else uv
+	uv = rotate_uv(uv, relative_position, world_position) if rotate_texture else uv
 
 	surface.add_triangle_fan(([a, b, c]), ([uv[0], uv[1], uv[2]]))
 	surface.add_triangle_fan(([a, c, d]), ([uv[0], uv[2], uv[3]]))
 
-func rotate_uv(default_uv_array : Array, relative_position : Vector3i) -> Array:
-	rng.seed = int(global_position.length_squared() + relative_position.length_squared())
+func rotate_uv(default_uv_array : Array, relative_position : Vector3i, world_position : Vector3) -> Array:
+	rng.seed = int(world_position.length_squared() + relative_position.length_squared())
 	var pivot := rng.randi() % default_uv_array.size() # Chose a random index from the array
 	var rotated_uvs := default_uv_array.slice(pivot, default_uv_array.size()) # Create a new split array with the random index item as the first
 	rotated_uvs.append_array(default_uv_array.slice(0, pivot)) # Append at the end the items that came before
@@ -91,9 +97,9 @@ func rotate_uv(default_uv_array : Array, relative_position : Vector3i) -> Array:
 
 	return rotated_uvs
 
-func is_transparent(relative_position : Vector3i) -> bool:
+func is_transparent(relative_position : Vector3i, world_position : Vector3) -> bool:
 	if Fragment.is_out_of_bounds(relative_position):
-		return Cube.MAP[FragmentManager.get_global_cube_state(Vector3i(global_position) + relative_position)][Cube.Details.is_transparent]
+		return Cube.MAP[FragmentManager.get_global_cube_state(Vector3i(world_position) + relative_position)][Cube.Details.is_transparent]
 	return Cube.MAP[cubes[relative_position.x][relative_position.y][relative_position.z]][Cube.Details.is_transparent]
 
 static func is_out_of_bounds(relative_position : Vector3i) -> bool:
