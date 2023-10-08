@@ -1,6 +1,6 @@
 class_name Overworld
 
-static func get_simple_terrain_data() -> Array:
+static func get_simple_terrain_data(fragment_global_position : Vector3) -> Array:
 	var cubes := []
 	cubes.resize(FragmentManager.DIMENSIONS.x)
 	for x in range(0, FragmentManager.DIMENSIONS.x):
@@ -10,14 +10,20 @@ static func get_simple_terrain_data() -> Array:
 			cubes[x][y] = []
 			cubes[x][y].resize(FragmentManager.DIMENSIONS.z)
 			for z in range(0, FragmentManager.DIMENSIONS.z):
-				if y > 9:
-					cubes[x][y][z] = Cube.State.air
-					continue
+				var position := fragment_global_position + Vector3(x, y, z)
 
-				if y == 9:
+				if position.y == -1:
 					cubes[x][y][z] = Cube.State.grass
 					continue
 
-				cubes[x][y][z] = Cube.State.stone
+				if position.y < -1 and position.y > -5:
+					cubes[x][y][z] = Cube.State.dirt
+					continue
+
+				if position.y <= -5:
+					cubes[x][y][z] = Cube.State.stone
+					continue
+
+				cubes[x][y][z] = Cube.State.air
 
 	return cubes

@@ -32,7 +32,7 @@ func render() -> void:
 	mesh_instance.set_mesh(mesh)
 
 	add_child(mesh_instance)
-	mesh_instance.create_trimesh_collision()
+	if mesh.get_surface_count() != 0: mesh_instance.create_trimesh_collision()
 
 func render_cube(cube_state : Cube.State, relative_position : Vector3i) -> void:
 	if cube_state == null or cube_state == Cube.State.air:

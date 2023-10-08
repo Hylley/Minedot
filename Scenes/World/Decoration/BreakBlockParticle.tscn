@@ -6,7 +6,6 @@ resource_local_to_scene = true
 [node name="BreakBlockParticle" type="CPUParticles3D"]
 emitting = false
 amount = 20
-lifetime = 5.0
 one_shot = true
 explosiveness = 1.0
 lifetime_randomness = 1.0

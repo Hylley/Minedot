@@ -1,7 +1,7 @@
 class_name Cube
 
 const TEXTURE_ATLAS_SIZE := Vector2i(3, 2)
-const MATERIAL = preload("res://Assets/Textures/standard_material_3d.tres")
+const MATERIAL := preload("res://Assets/Textures/standard_material_3d.tres")
 
 const VERTICES := [
 	Vector3i(0, 0, 0),
@@ -45,7 +45,7 @@ enum Details
 }
 const DETAILS_TEXTURE_FACES := [Cube.Details.top_texture, Cube.Details.bottom_texture, Cube.Details.left_texture, Cube.Details.right_texture, Cube.Details.front_texture, Cube.Details.back_texture]
 
-const MAP = \
+const MAP := \
 {
 	State.air:
 	{

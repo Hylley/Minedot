@@ -13,7 +13,14 @@ config_version=5
 config/name="Hash"
 run/main_scene="res://Scenes/World/World.tscn"
 config/features=PackedStringArray("4.1", "Forward Plus")
+boot_splash/bg_color=Color(0.0313726, 0.0313726, 0.0313726, 1)
 config/icon="res://icon.svg"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=4
 
 [input]
 

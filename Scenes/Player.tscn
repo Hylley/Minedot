@@ -4,6 +4,8 @@
 [ext_resource type="Material" uid="uid://jgea8uoathid" path="res://Assets/Textures/cube_highlight.tres" id="2_d7dft"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_l2tdv"]
+custom_solver_bias = 1.0
+margin = 0.3
 height = 1.8
 radius = 0.4
 
@@ -29,6 +31,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 
 [node name="RayCast3D" type="RayCast3D" parent="Head/Camera3D"]
 target_position = Vector3(0, 0, -5)
+debug_shape_custom_color = Color(1, 0, 0, 1)
+debug_shape_thickness = 1
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CylinderShape3D_l2tdv")

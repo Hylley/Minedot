@@ -1,15 +1,13 @@
 extends CharacterBody3D
 class_name Player
 
-@onready var head = $Head
-@onready var camera = $Head/Camera3D
-@onready var raycast = $Head/Camera3D/RayCast3D
-@onready var cube_highlight = $CubeHighlight
-
-var camera_x_rotation = 0
+@onready var head := $Head
+@onready var camera := $Head/Camera3D
+@onready var raycast := $Head/Camera3D/RayCast3D
+@onready var cube_highlight := $CubeHighlight
 
 # Movement
-var speed: float
+var speed : float
 const WALK_SPEED := 5.
 const SPRINT_SPEED := 8.
 const JUMP_VELOCITY := 8
@@ -29,7 +27,6 @@ var quick_zoom := false
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	raycast.add_exception(self)
 
 func _unhandled_input(event) -> void:
@@ -37,7 +34,6 @@ func _unhandled_input(event) -> void:
 		head.rotate_y(-event.relative.x * SENSITIVITY)
 		camera.rotate_x(-event.relative.y * SENSITIVITY)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-90), deg_to_rad(90))
-
 
 func _input(_event) -> void:
 	quick_zoom = Input.is_action_pressed('Quick Zoom') and not Input.is_action_just_released('Quick Zoom')
@@ -101,7 +97,7 @@ func handle_interaction() -> void:
 
 		var point : Vector3 = raycast.get_collision_point()
 		var norma : Vector3 = raycast.get_collision_normal()
-		var focusing = floor(point - norma * .5)
+		var focusing : Vector3 = floor(point - norma * .5)
 
 		cube_highlight.global_position = focusing + Vector3(.5, .5, .5)
 		cube_highlight.visible = true
