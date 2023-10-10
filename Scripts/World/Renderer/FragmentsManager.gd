@@ -2,10 +2,9 @@ extends Node3D
 class_name FragmentManager
 
 const DIMENSIONS := Vector3i(16, 16, 16); @warning_ignore('integer_division')
-const LOAD_RANGE := 2
+const LOAD_RANGE := 32
 const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top and half at the bottom of the center fragment (aka 7 fragments of height)
 
-const MAXIMUM_RENDER_THREADS = 1; static var active_render_threads := []
 static var generation_thread : Thread; static var keep_generating = true
 
 static var fragment_scene := preload('res://Scenes/World/Fragment.tscn')
@@ -18,14 +17,14 @@ static var active_fragments := {}
 static var cube_break_particle = load('res://Scenes/World/Decoration/BreakBlockParticle.tscn')
 
 # Debug
-static var one_time_generation = true
+static var one_time_generation = false
 
 # Main methods
 
 func _ready() -> void:
+	Overworld.set_seed(randi())
 	generation_thread = Thread.new()
 	generation_thread.start(world_generation_thread)
-	for _i in range(MAXIMUM_RENDER_THREADS): active_render_threads.append(Thread.new())
 
 func _process(_delta : float) -> void:
 	current_plater_fragment_position = FragmentManager.snap_to_grid(player.get_global_position())
@@ -56,19 +55,20 @@ func world_generation_thread():
 		var direction : Vector2i = Vector2i(1, 0)
 		var step := 1
 		var steps_in_direction := 1
-		var generate_queue := []
+		var generation_queue := []
+		var rendering_queue := []
 		var keep_loaded := []
 
 		# Generate new fragments
 		for i in range(LOAD_RANGE):
 			keep_loaded.append(pivot)
-			if not pivot in active_fragments: generate_queue.append(pivot)
+			if not pivot in active_fragments: generation_queue.append(pivot)
 
 			for j in range(int(HEIGHT_GROW / 2.)):
 				var top_fragment_position := pivot + Vector3i(0, j + 1, 0) * DIMENSIONS; keep_loaded.append(top_fragment_position)
 				var bottom_fragment_position := pivot - Vector3i(0, j + 1, 0) * DIMENSIONS; keep_loaded.append(bottom_fragment_position)
-				if not top_fragment_position in active_fragments: generate_queue.append(top_fragment_position)
-				if not bottom_fragment_position in active_fragments: generate_queue.append(bottom_fragment_position)
+				if not top_fragment_position in active_fragments: generation_queue.append(top_fragment_position)
+				if not bottom_fragment_position in active_fragments: generation_queue.append(bottom_fragment_position)
 
 			pivot += Vector3i(direction.x, 0, direction.y) * DIMENSIONS
 			steps_in_direction -= 1
@@ -86,28 +86,22 @@ func world_generation_thread():
 					step += 1
 				steps_in_direction = step  # Reset steps for the new direction
 
-			while generate_queue.size() > 0 and keep_generating:
-				var available_thread = get_avaliable_thread()
+		for fragment in generation_queue:
+				var fragment_instance := FragmentManager.instantiate_fragment(fragment)
+				fragment_instance.update_terrain(Overworld.get_abstract_terrain_data(fragment))
+				rendering_queue.append(fragment_instance)
 
-				if available_thread == null: continue
+		for fragment in rendering_queue:
+			fragment.render()
+			fragment.set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
 
-				var fragment_world_position : Vector3i = generate_queue.pop_front()
-				var fragment_instance := FragmentManager.instantiate_fragment(fragment_world_position)
-				available_thread.start(fragment_instance.update_terrain)
-				available_thread.wait_to_finish()
-				available_thread.start(fragment_instance.render)
-				available_thread.wait_to_finish()
-				fragment_instance.set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
-
-				call_deferred('add_child', fragment_instance)
+			call_deferred('add_child', fragment)
 
 		# Delete the far-away ones
 		for fragment in active_fragments.keys():
 			if fragment in keep_loaded: continue
 			active_fragments[fragment].queue_free()
 			active_fragments.erase(fragment)
-
-
 # Abstractions
 
 var current_plater_fragment_position : Vector3i
@@ -116,12 +110,6 @@ func player_switch_fragment() -> bool:
 	var result := current_plater_fragment_position != last_player_fragment_position
 	last_player_fragment_position = current_plater_fragment_position
 	return result
-
-func get_avaliable_thread():
-	for thread in active_render_threads:
-		if not thread.is_alive() and not thread.is_started(): return thread
-	return null
-
 
 # Fragment manipulation
 
@@ -144,7 +132,6 @@ static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
 	return Vector3i(multiply)
 
 static func update_fragment_if_exists(fragment_position : Vector3i):
-	print(fragment_position in active_fragments)
 	if not fragment_position in active_fragments: return
 	active_fragments[fragment_position].render()
 

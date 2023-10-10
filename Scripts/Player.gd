@@ -13,7 +13,7 @@ const SPRINT_SPEED := 8.
 const JUMP_VELOCITY := 8
 const SENSITIVITY := .004
 const gravity := 30
-var gamemode = 3
+var gamemode = 0
 
 # View bob
 const BOB_FREQ := 2.4

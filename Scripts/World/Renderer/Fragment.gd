@@ -10,11 +10,10 @@ var rng := RandomNumberGenerator.new()
 
 var world_position : Vector3i; func set_world_position(new_position : Vector3i) -> void: set_position(Vector3(new_position)); world_position = new_position
 
-func update_terrain() -> Object:
-	cubes = Overworld.get_simple_terrain_data(world_position)
-	return self
+func update_terrain(new_terrain : Array) -> void:
+	cubes = new_terrain
 
-func render() -> Object:
+func render() -> void:
 	if mesh_instance != null:
 		mesh_instance.queue_free()
 		mesh_instance = null
@@ -33,13 +32,12 @@ func render() -> Object:
 	surface.set_material(Cube.MATERIAL)
 	surface.commit(mesh)
 	mesh_instance.set_mesh(mesh)
+	mesh_instance.set_gi_mode(GeometryInstance3D.GI_MODE_DISABLED)
 
 	add_child(mesh_instance)
 	if mesh.get_surface_count() != 0: mesh_instance.call_deferred('create_trimesh_collision')
 
 	visible = true
-
-	return self
 
 func render_cube(cube_state : Cube.State, relative_position : Vector3i) -> void:
 	if cube_state == null or cube_state == Cube.State.air:
