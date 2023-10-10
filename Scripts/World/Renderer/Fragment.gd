@@ -8,12 +8,13 @@ var mesh : ArrayMesh = null
 var mesh_instance : MeshInstance3D = null
 var rng := RandomNumberGenerator.new()
 
-var world_position : Vector3i
+var world_position : Vector3i; func set_world_position(new_position : Vector3i) -> void: set_position(Vector3(new_position)); world_position = new_position
 
-func update_terrain(new_world_position : Vector3i):
-	cubes = Overworld.get_simple_terrain_data(new_world_position)
+func update_terrain() -> Object:
+	cubes = Overworld.get_simple_terrain_data(world_position)
+	return self
 
-func render():
+func render() -> Object:
 	if mesh_instance != null:
 		mesh_instance.queue_free()
 		mesh_instance = null
@@ -37,6 +38,8 @@ func render():
 	if mesh.get_surface_count() != 0: mesh_instance.call_deferred('create_trimesh_collision')
 
 	visible = true
+
+	return self
 
 func render_cube(cube_state : Cube.State, relative_position : Vector3i) -> void:
 	if cube_state == null or cube_state == Cube.State.air:
@@ -96,7 +99,7 @@ func rotate_uv(default_uv_array : Array, relative_position : Vector3i) -> Array:
 
 func is_transparent(relative_position : Vector3i) -> bool:
 	if Fragment.is_out_of_bounds(relative_position):
-		return Cube.MAP[FragmentManager.get_global_cube_state(Vector3i(world_position) + relative_position)][Cube.Details.is_transparent]
+		return Cube.MAP[FragmentManager.get_global_cube_state(world_position + relative_position)][Cube.Details.is_transparent]
 	return Cube.MAP[cubes[relative_position.x][relative_position.y][relative_position.z]][Cube.Details.is_transparent]
 
 static func is_out_of_bounds(relative_position : Vector3i) -> bool:

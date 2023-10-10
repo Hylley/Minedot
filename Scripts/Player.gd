@@ -13,6 +13,7 @@ const SPRINT_SPEED := 8.
 const JUMP_VELOCITY := 8
 const SENSITIVITY := .004
 const gravity := 30
+var gamemode = 3
 
 # View bob
 const BOB_FREQ := 2.4
@@ -29,6 +30,9 @@ func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 	raycast.add_exception(self)
 
+	if gamemode == 3:
+		get_node('CollisionShape3D').disabled = true
+
 func _unhandled_input(event) -> void:
 	if event is InputEventMouseMotion:
 		head.rotate_y(-event.relative.x * SENSITIVITY)
@@ -43,14 +47,16 @@ func _physics_process(delta) -> void:
 	handle_interaction() # Break block, add block, interact etc ...
 
 func handle_movement(delta) -> void:
-	if not is_on_floor():
-		velocity.y -= gravity * delta
+	if gamemode == 0:
+		if not is_on_floor(): velocity.y -= gravity * delta
 
-	#if World.paused: return
-
-	# Handle Jump.
-	if Input.is_action_pressed("Jump") and is_on_floor():
-		velocity.y = JUMP_VELOCITY
+		# Handle Jump.
+		if Input.is_action_pressed("Jump") and is_on_floor():
+			velocity.y = JUMP_VELOCITY
+	elif gamemode == 3:
+		if    Input.is_action_pressed("Jump"):   velocity.y =  gravity * delta * 10
+		elif  Input.is_action_pressed("Crouch"): velocity.y = -gravity * delta * 10
+		else: velocity.y = 0
 
 	# Handle Sprint.
 	if Input.is_action_pressed("Sprint"):

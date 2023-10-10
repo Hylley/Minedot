@@ -6,8 +6,8 @@
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_l2tdv"]
 custom_solver_bias = 1.0
 margin = 0.3
-height = 1.8
-radius = 0.4
+height = 1.7
+radius = 0.3
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_88m0l"]
 transparency = 1

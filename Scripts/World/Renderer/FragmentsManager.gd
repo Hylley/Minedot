@@ -2,11 +2,10 @@ extends Node3D
 class_name FragmentManager
 
 const DIMENSIONS := Vector3i(16, 16, 16); @warning_ignore('integer_division')
-const WORLD_OFFSET := Vector3i(-(DIMENSIONS.x / 2), -DIMENSIONS.y, -(DIMENSIONS.z / 2))
-const LOAD_RANGE := 30
+const LOAD_RANGE := 2
 const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top and half at the bottom of the center fragment (aka 7 fragments of height)
 
-const MAXIMUM_RENDER_THREADS = 7; static var active_render_threads := []
+const MAXIMUM_RENDER_THREADS = 1; static var active_render_threads := []
 static var generation_thread : Thread; static var keep_generating = true
 
 static var fragment_scene := preload('res://Scenes/World/Fragment.tscn')
@@ -18,13 +17,14 @@ static var active_fragments := {}
 # Decoration
 static var cube_break_particle = load('res://Scenes/World/Decoration/BreakBlockParticle.tscn')
 
+# Debug
+static var one_time_generation = true
 
 # Main methods
 
 func _ready() -> void:
 	generation_thread = Thread.new()
 	generation_thread.start(world_generation_thread)
-
 	for _i in range(MAXIMUM_RENDER_THREADS): active_render_threads.append(Thread.new())
 
 func _process(_delta : float) -> void:
@@ -35,8 +35,21 @@ func _exit_tree():
 	generation_thread.wait_to_finish()
 
 func world_generation_thread():
+	# There is A LOT of room to improvement. Right know the rendering process
+	# only accounts for fragments that already exists. Wich means that if a new
+	# fragment is added, the other ones will not be called neither notified of
+	# this change. Wich basically means that there is a lot of unecessary faces
+	# being rendered every time a new fragment is generated.
+	# I really don't know how to fix that, since the generation process is
+	# dealt in another thread, the code just can't update a fragment that is
+	# already in the main process thread.
+
+	var first_load = true
 	while keep_generating:
-		if not player_switch_fragment(): continue
+		if not player_switch_fragment():
+			if not first_load and one_time_generation: return
+			if not first_load: continue
+			first_load = false
 
 		# Spiral fragment generation
 		var pivot := current_plater_fragment_position
@@ -80,7 +93,7 @@ func world_generation_thread():
 
 				var fragment_world_position : Vector3i = generate_queue.pop_front()
 				var fragment_instance := FragmentManager.instantiate_fragment(fragment_world_position)
-				available_thread.start(fragment_instance.update_terrain.bind(fragment_world_position))
+				available_thread.start(fragment_instance.update_terrain)
 				available_thread.wait_to_finish()
 				available_thread.start(fragment_instance.render)
 				available_thread.wait_to_finish()
@@ -117,16 +130,21 @@ static func instantiate_fragment(world_position : Vector3i) -> Object:
 
 	var new_fragment : Object = fragment_scene.instantiate()
 	new_fragment.set_as_top_level(true)
-	new_fragment.set_position(world_position)
+	new_fragment.set_world_position(world_position)
 	new_fragment.set_visible(false)
 	active_fragments[world_position] = new_fragment
 
 	return new_fragment
 
 static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
-	return Vector3i(floor(Vector3(reference_position - WORLD_OFFSET) / Vector3(DIMENSIONS)) * Vector3(DIMENSIONS)) + WORLD_OFFSET
+	var division := Vector3(reference_position) / Vector3(DIMENSIONS)
+	var flooored : Vector3 = floor(division)
+	var multiply := flooored * Vector3(DIMENSIONS)
+
+	return Vector3i(multiply)
 
 static func update_fragment_if_exists(fragment_position : Vector3i):
+	print(fragment_position in active_fragments)
 	if not fragment_position in active_fragments: return
 	active_fragments[fragment_position].render()
 
