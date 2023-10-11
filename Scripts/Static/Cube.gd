@@ -42,7 +42,10 @@ enum Details
 	is_transparent,
 	rotate_uv_x,
 	rotate_uv_y,
-	rotate_uv_z
+	rotate_uv_z,
+	cube_remove_sound,
+	cube_append_sound,
+	cube_walk_soud
 }
 const DETAILS_TEXTURE_FACES := [Cube.Details.top_texture, Cube.Details.bottom_texture, Cube.Details.left_texture, Cube.Details.right_texture, Cube.Details.front_texture, Cube.Details.back_texture]
 
@@ -58,7 +61,9 @@ const MAP := \
 		Details.top_texture  : Vector2i(0, 0), Details.bottom_texture: Vector2i(2, 0), # Coordinates into the atlas texture file
 		Details.left_texture : Vector2i(1, 0), Details.right_texture : Vector2i(1, 0),
 		Details.front_texture: Vector2i(1, 0), Details.back_texture  : Vector2i(1, 0),
-		Details.rotate_uv_x: false, Details.rotate_uv_y: true, Details.rotate_uv_z: false
+		Details.rotate_uv_x: false, Details.rotate_uv_y: true, Details.rotate_uv_z: false,
+		Details.cube_remove_sound: 'res://Assets/Sound/Effect/Fantozzi-SandL1.ogg',
+		Details.cube_append_sound: 'res://Assets/Sound/Effect/Fantozzi-SandL3.ogg'
 	},
 	State.dirt:
 	{
@@ -66,7 +71,9 @@ const MAP := \
 		Details.top_texture  : Vector2i(2, 0), Details.bottom_texture: Vector2i(2, 0),
 		Details.left_texture : Vector2i(2, 0), Details.right_texture : Vector2i(2, 0),
 		Details.front_texture: Vector2i(2, 0), Details.back_texture  : Vector2i(2, 0),
-		Details.rotate_uv_x: true, Details.rotate_uv_y: true, Details.rotate_uv_z: true
+		Details.rotate_uv_x: true, Details.rotate_uv_y: true, Details.rotate_uv_z: true,
+		Details.cube_remove_sound: 'res://Assets/Sound/Effect/Fantozzi-SandR1.ogg',
+		Details.cube_append_sound: 'res://Assets/Sound/Effect/Fantozzi-SandR3.ogg'
 	},
 	State.stone:
 	{
@@ -74,7 +81,9 @@ const MAP := \
 		Details.top_texture  : Vector2i(0, 1), Details.bottom_texture: Vector2i(0, 1),
 		Details.left_texture : Vector2i(0, 1), Details.right_texture : Vector2i(0, 1),
 		Details.front_texture: Vector2i(0, 1), Details.back_texture  : Vector2i(0, 1),
-		Details.rotate_uv_x: true, Details.rotate_uv_y: true, Details.rotate_uv_z: true
+		Details.rotate_uv_x: true, Details.rotate_uv_y: true, Details.rotate_uv_z: true,
+		Details.cube_remove_sound: 'res://Assets/Sound/Effect/Fantozzi-StoneL1.ogg',
+		Details.cube_append_sound: 'res://Assets/Sound/Effect/Fantozzi-StoneR3.ogg'
 	},
 	State.glass:
 	{
@@ -82,6 +91,8 @@ const MAP := \
 		Details.top_texture  : Vector2i(1, 1), Details.bottom_texture: Vector2i(1, 1),
 		Details.left_texture : Vector2i(1, 1), Details.right_texture : Vector2i(1, 1),
 		Details.front_texture: Vector2i(1, 1), Details.back_texture  : Vector2i(1, 1),
-		Details.rotate_uv_x: false, Details.rotate_uv_y: false, Details.rotate_uv_z: false
+		Details.rotate_uv_x: false, Details.rotate_uv_y: false, Details.rotate_uv_z: false,
+		Details.cube_remove_sound: 'res://Assets/Sound/Effect/221528__unfa__glass-break.ogg',
+		Details.cube_append_sound: 'res://Assets/Sound/Effect/639745__ryanz-official__glass-hit.ogg'
 	}
 }

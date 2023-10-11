@@ -56,19 +56,25 @@ radiance_size = 0
 background_mode = 2
 sky = SubResource("Sky_bq4ak")
 ambient_light_source = 2
-ambient_light_color = Color(0.54902, 0.54902, 0.54902, 1)
+ambient_light_color = Color(0.639216, 0.639216, 0.639216, 1)
+ambient_light_sky_contribution = 0.0
+ambient_light_energy = 0.5
+reflected_light_source = 2
 tonemap_mode = 2
 tonemap_white = 8.0
 ssao_enabled = true
 ssao_radius = 2.0
 ssao_intensity = 3.0
-volumetric_fog_enabled = true
+fog_enabled = true
+fog_light_color = Color(0.654902, 0.686275, 0.733333, 1)
+fog_aerial_perspective = 1.0
+fog_sky_affect = 0.2
 volumetric_fog_density = 0.02
 volumetric_fog_emission_energy = 0.0
 volumetric_fog_gi_inject = 0.0
 volumetric_fog_detail_spread = 0.5
 volumetric_fog_ambient_inject = 1.0
-volumetric_fog_sky_affect = 0.5
+volumetric_fog_sky_affect = 0.2
 
 [node name="World" type="Node3D"]
 
@@ -76,7 +82,7 @@ volumetric_fog_sky_affect = 0.5
 environment = SubResource("Environment_msn37")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
-transform = Transform3D(0.615662, 0.708259, 0.345441, -3.83236e-08, -0.438371, 0.898794, 0.788011, -0.553353, -0.269888, 0.104811, 6.59885, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.104811, 6.59885, 0)
 light_energy = 2.0
 shadow_enabled = true
 script = ExtResource("2_aambj")

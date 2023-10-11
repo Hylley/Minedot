@@ -106,8 +106,19 @@ static func is_out_of_bounds(relative_position : Vector3i) -> bool:
 	   relative_position.z < 0 or relative_position.z >= FragmentManager.DIMENSIONS.z
 
 func change_cube(local_position : Vector3i, cube_state : Cube.State) -> void:
-	if cube_state == Cube.State.air: generate_break_cpu_particle(global_position + Vector3(local_position) + Vector3(.5, .5, .5), cubes[local_position.x][local_position.y][local_position.z])
+	if cube_state == Cube.State.air:
+		generate_break_cpu_particle(global_position + Vector3(local_position) + Vector3(.5, .5, .5), cubes[local_position.x][local_position.y][local_position.z])
+	else:
+		var audio_source : AudioStreamPlayer3D = AudioStreamPlayer3D.new()
+		audio_source.stream = load(Cube.MAP[cube_state][Cube.Details.cube_append_sound])
+		add_child(audio_source)
+		audio_source.global_position = global_position + Vector3(local_position)
+		audio_source.play()
+		get_tree().create_timer(audio_source.stream.get_length(), false).connect("timeout", audio_source.queue_free)
+
 	cubes[local_position.x][local_position.y][local_position.z] = cube_state
+
+
 
 	render()
 
@@ -133,7 +144,14 @@ func generate_break_cpu_particle(new_particle_position : Vector3, cube_state : C
 	new_particle.mesh.clear_surfaces()
 	mdt.commit_to_surface(new_particle.mesh)
 
+	var audio_source : AudioStreamPlayer3D = AudioStreamPlayer3D.new()
+	audio_source.stream = load(Cube.MAP[cube_state][Cube.Details.cube_remove_sound])
+
+	new_particle.add_child(audio_source)
 	add_child(new_particle)
 	new_particle.global_position = new_particle_position
 	new_particle.emitting = true
+	audio_source.play()
+
+
 	get_tree().create_timer(new_particle.lifetime, false).connect("timeout", new_particle.queue_free)
