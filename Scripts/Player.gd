@@ -43,6 +43,7 @@ func _input(_event) -> void:
 	quick_zoom = Input.is_action_pressed('Quick Zoom') and not Input.is_action_just_released('Quick Zoom')
 
 func _physics_process(delta) -> void:
+	if FragmentManager.first_load: return
 	handle_movement(delta)
 	handle_interaction() # Break block, add block, interact etc ...
 

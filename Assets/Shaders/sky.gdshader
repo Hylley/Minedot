@@ -28,7 +28,7 @@ uniform float dark_falloff : hint_range(1.0, 6.0, 0.001) = 3.915;
 
 // Sun and Moon Horizon fade parameters
 group_uniforms sun_moon_fade;
-uniform bool enable_horizon_fade = true;
+uniform bool enable_horizon_fade = false;
 uniform float horizon_fade_size = 0.2;
 uniform float horizon_fade_blend = 0.1;
 

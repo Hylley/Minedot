@@ -32,7 +32,7 @@ func render() -> void:
 	surface.set_material(Cube.MATERIAL)
 	surface.commit(mesh)
 	mesh_instance.set_mesh(mesh)
-	mesh_instance.set_gi_mode(GeometryInstance3D.GI_MODE_DISABLED)
+	# mesh_instance.set_gi_mode(GeometryInstance3D.GI_MODE_DISABLED)
 
 	add_child(mesh_instance)
 	if mesh.get_surface_count() != 0: mesh_instance.call_deferred('create_trimesh_collision')

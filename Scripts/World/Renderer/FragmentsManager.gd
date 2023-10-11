@@ -2,7 +2,7 @@ extends Node3D
 class_name FragmentManager
 
 const DIMENSIONS := Vector3i(16, 16, 16); @warning_ignore('integer_division')
-const LOAD_RANGE := 32
+const LOAD_RANGE := 255
 const HEIGHT_GROW := 6 # Will load half of this numer of fragments at the top and half at the bottom of the center fragment (aka 7 fragments of height)
 
 static var generation_thread : Thread; static var keep_generating = true
@@ -11,17 +11,19 @@ static var fragment_scene := preload('res://Scenes/World/Fragment.tscn')
 static var active_fragments := {}
 # static var inactive_fragments := {}
 
-@onready var player = get_node('/root/World/Player')
+@onready var player := get_node('/root/World/Player')
 
 # Decoration
-static var cube_break_particle = load('res://Scenes/World/Decoration/BreakBlockParticle.tscn')
+static var cube_break_particle := load('res://Scenes/World/Decoration/BreakBlockParticle.tscn')
 
 # Debug
-static var one_time_generation = false
-
+static var one_time_generation := false
+static var first_load := true
 # Main methods
 
 func _ready() -> void:
+	# global_position = Vector3(-DIMENSIONS.x/2, -DIMENSIONS.y, -DIMENSIONS.z/2)
+
 	Overworld.set_seed(randi())
 	generation_thread = Thread.new()
 	generation_thread.start(world_generation_thread)
@@ -43,12 +45,10 @@ func world_generation_thread():
 	# dealt in another thread, the code just can't update a fragment that is
 	# already in the main process thread.
 
-	var first_load = true
+	first_load = true
 	while keep_generating:
 		if not player_switch_fragment():
 			if not first_load and one_time_generation: return
-			if not first_load: continue
-			first_load = false
 
 		# Spiral fragment generation
 		var pivot := current_plater_fragment_position
@@ -102,6 +102,8 @@ func world_generation_thread():
 			if fragment in keep_loaded: continue
 			active_fragments[fragment].queue_free()
 			active_fragments.erase(fragment)
+
+		if first_load: first_load = false
 # Abstractions
 
 var current_plater_fragment_position : Vector3i
@@ -157,17 +159,17 @@ static func place_cube(fragment_position : Vector3i, cube_global_position : Vect
 	# this is better for performance or don't.
 	if cube_relative_position.x == 0:
 		FragmentManager.update_fragment_if_exists(fragment_position - Vector3i(DIMENSIONS.x, 0, 0))
-	elif cube_relative_position.x == 15:
+	elif cube_relative_position.x == DIMENSIONS.x - 1:
 		FragmentManager.update_fragment_if_exists(fragment_position + Vector3i(DIMENSIONS.x, 0, 0))
 
 	if cube_relative_position.y == 0:
 		FragmentManager.update_fragment_if_exists(fragment_position - Vector3i(0, DIMENSIONS.y, 0))
-	elif cube_relative_position.y == 15:
+	elif cube_relative_position.y == DIMENSIONS.y - 1:
 		FragmentManager.update_fragment_if_exists(fragment_position + Vector3i(0, DIMENSIONS.y, 0))
 
 	if cube_relative_position.z == 0:
 		FragmentManager.update_fragment_if_exists(fragment_position - Vector3i(0, 0, DIMENSIONS.z))
-	elif cube_relative_position.z == 15:
+	elif cube_relative_position.z == DIMENSIONS.z - 1:
 		FragmentManager.update_fragment_if_exists(fragment_position + Vector3i(0, 0, DIMENSIONS.z))
 
 static func break_cube(fragment_position : Vector3, focusing : Vector3i) -> void:

@@ -18,7 +18,8 @@ static func get_abstract_terrain_data(fragment_global_position : Vector3):
 			for z in range(0, FragmentManager.DIMENSIONS.z):
 				# Top layer = 15, bottom layer = 0
 				var position := fragment_global_position + Vector3(x, y, z)
-				var height = int((noise.get_noise_2d(position.x, position.z) + 1)/2 * FragmentManager.DIMENSIONS.y)
+				var height = ceil(noise.get_noise_2d(position.x, position.z) * FragmentManager.DIMENSIONS.y)
+				# height =  sqrt(height) * pow(height, randi())
 
 				if position.y < height / 2.:
 					cubes[x][y][z] = Cube.State.stone
