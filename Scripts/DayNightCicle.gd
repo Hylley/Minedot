@@ -1,6 +1,6 @@
 extends DirectionalLight3D
 
-static var full_day_length_in_seconds = 600
+static var full_day_length_in_seconds = 300
 
 func _ready() -> void:
 	pass # Replace with function body.

@@ -22,8 +22,8 @@ shader_parameter/dark_falloff = 3.915
 shader_parameter/enable_horizon_fade = false
 shader_parameter/horizon_fade_size = 0.2
 shader_parameter/horizon_fade_blend = 0.1
-shader_parameter/day_bottom_color = Color(0.4, 1, 1, 1)
-shader_parameter/day_top_color = Color(0, 0.8, 1, 1)
+shader_parameter/day_bottom_color = Color(0.721569, 0.831373, 1, 1)
+shader_parameter/day_top_color = Color(0.494118, 0.67451, 0.996078, 1)
 shader_parameter/night_bottom_color = Color(0, 0, 0.2, 1)
 shader_parameter/night_top_color = Color(0, 0, 0, 1)
 shader_parameter/stars_speed = 0.2
@@ -63,16 +63,11 @@ reflected_light_source = 2
 tonemap_mode = 2
 tonemap_white = 8.0
 ssao_enabled = true
-ssao_radius = 2.0
-ssao_intensity = 3.0
-fog_enabled = true
 fog_light_color = Color(0.654902, 0.686275, 0.733333, 1)
 fog_aerial_perspective = 1.0
 fog_sky_affect = 0.2
-volumetric_fog_density = 0.02
 volumetric_fog_emission_energy = 0.0
 volumetric_fog_gi_inject = 0.0
-volumetric_fog_detail_spread = 0.5
 volumetric_fog_ambient_inject = 1.0
 volumetric_fog_sky_affect = 0.2
 
@@ -82,13 +77,16 @@ volumetric_fog_sky_affect = 0.2
 environment = SubResource("Environment_msn37")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.104811, 6.59885, 0)
-light_energy = 2.0
+transform = Transform3D(1, 0, 0, 0, -0.707107, 0.707107, 0, -0.707107, -0.707107, 0.104811, 6.59885, 0)
 shadow_enabled = true
+shadow_opacity = 0.5
 script = ExtResource("2_aambj")
 
 [node name="Player" parent="." instance=ExtResource("1_f8uxd")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 16, 8)
 
+[node name="PlayerMeshInstance3D" type="MeshInstance3D" parent="Player"]
+
 [node name="FragmentsManager" type="Node3D" parent="."]
+visibility_parent = NodePath("../Player/PlayerMeshInstance3D")
 script = ExtResource("2_i0ov5")
