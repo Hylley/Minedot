@@ -4,6 +4,7 @@ class_name Fragment
 # Variables ———————————————————————————————————
 static var SIZE : Vector3i
 var cubes := []
+var rendered : bool
 
 # Rendering variables —————————————————————————
 var mesh : ArrayMesh
@@ -12,10 +13,10 @@ var surface := SurfaceTool.new()
 
 # Rendering methods ————————————————————————————
 
-func render(_cubes : Array) -> void:
+func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
 	cubes = _cubes
 
-	if mesh_instance == null: mesh_instance = get_node('MeshInstance3D')
+	if mesh_instance == null: mesh_instance = self.get_node('MeshInstance3D')
 	else: mesh_instance.set_mesh(null)
 
 	mesh = ArrayMesh.new()
@@ -35,6 +36,16 @@ func render(_cubes : Array) -> void:
 	if mesh.get_surface_count() != 0: mesh_instance.call_deferred('create_trimesh_collision')
 
 	visible = true
+	rendered = true
+
+	call_deferred('callback', parent, world_position)
+
+
+func callback(parent : Object, world_position : Vector3i):
+	parent.add_child(self)
+	set_as_top_level(true)
+	set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
+	set_global_position(world_position)
 
 
 func render_cube(cube : Placeable.state, relative_position : Vector3i) -> void:
@@ -116,3 +127,47 @@ static func rotate_uv(default_uv_array : Array, cube_world_position : Vector3i) 
 	if pivot % 2 == 0: rotated_uvs.reverse()
 
 	return rotated_uvs
+
+static func join_duplicates(_mesh : Mesh) -> ArrayMesh:
+	var data_tool := MeshDataTool.new()
+	if not data_tool.create_from_surface(_mesh, 0) == OK:
+		return
+
+	var old_vertex_ids := {}
+	var ordered_vertices := []
+	for vertex_id in data_tool.get_vertex_count():
+		var vertex := data_tool.get_vertex(vertex_id)
+		old_vertex_ids[vertex] = vertex_id
+		ordered_vertices.append(vertex)
+	ordered_vertices.sort()
+
+	var surface_tool := SurfaceTool.new()
+	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	surface_tool.index()
+
+	var vertex_ids := {}
+	var original_face_ids := {}
+	var current_id := 0
+	var last_vertex : Vector3 = ordered_vertices.front()
+	var id : int = old_vertex_ids[ordered_vertices.front()]
+	surface_tool.set_color(Color(id))
+	surface_tool.add_vertex(last_vertex)
+
+	for vertex in ordered_vertices:
+		if not last_vertex.is_equal_approx(vertex):
+			id = old_vertex_ids[vertex]
+			surface_tool.set_color(Color(id))
+			surface_tool.add_vertex(vertex)
+			current_id += 1
+			last_vertex = vertex
+		vertex_ids[vertex] = current_id
+
+	var last_face_id := 0
+	for vertex_id in data_tool.get_vertex_count():
+		var vertex := data_tool.get_vertex(vertex_id)
+		if vertex_id % 3 == 0:
+			original_face_ids[last_face_id] = data_tool.get_vertex_faces(vertex_id)[0]
+			last_face_id += 1
+		surface_tool.add_index(vertex_ids[vertex])
+
+	return surface_tool.commit()

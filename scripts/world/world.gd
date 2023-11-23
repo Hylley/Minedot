@@ -3,44 +3,110 @@ class_name World
 
 # Variables ———————————————————————————————————
 var initialized : bool
+var active : bool = true
 static var paused : bool
 
 # Rendering ———————————————————————————————————
-static var gen_thread := Thread.new()
+var gen_thread := Thread.new()
+static var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
-var LOAD_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 255)
+var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 255)
 var HEIGHT_GROW : int = UserPreferences.get_preference('performance', 'height_grow', 6)
 
-var TILE_X : bool
-var TILE_Y : bool
+var TILE_HORIZONTAL : bool
+var TILE_VERTICAL : bool
 var PIVOT : Node3D
-var grab_data_for : Callable # The world will call for this method to get data to load in fragments
+var current_pivot_snapped_position := Vector3i.ZERO
+var grab_data : Callable # The world will call for this method to get data to load in fragments
 
 # Resources ———————————————————————————————————
 static var fragment_tscn := load('res://scenes/world_fragment.tscn')
 
-func initialize(fragment_size : Vector3i, tile_x : bool, tile_y : bool, data_source : Callable, pivot : Node3D) -> void:
+
+# Generation methods ——————————————————————————
+
+func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, data_source : Callable, pivot : Node3D) -> void:
 	if initialized: push_warning(self.to_string() + ' has been initialized before; this may cause unexpected behavior.')
 
 	Fragment.SIZE = fragment_size
-	self.TILE_X = tile_x
-	self.TILE_Y = tile_y
+	self.TILE_HORIZONTAL = tile_h
+	self.TILE_VERTICAL = tile_v
 	self.PIVOT = pivot
 
-	self.grab_data_for = data_source
+	self.grab_data = data_source
 
 	initialized = true
 
-
-func _process(_delta: float) -> void:
-	if not initialized: return;
+	gen_thread.start(generate)
 
 
-func _exit_tree():
-	pause()
-	World.gen_thread.wait_to_finish()
-	World.gen_thread = null
+func generate() -> void:
+	var view := []
+
+	while active:
+		view.clear()
+		view.append(current_pivot_snapped_position)
+
+		var head = current_pivot_snapped_position;
+		var direction : Vector2i = Vector2i(1, 0)
+		var step := 1; var steps_in_direction := 1
+
+		for i in range(CIRCULAR_RANGE):
+			if TILE_VERTICAL:
+				for j in range(int(HEIGHT_GROW / 2.)):
+					var top_fragment_position : Vector3i = head + Vector3i(0, j + 1, 0) * Fragment.SIZE
+					view.append(top_fragment_position)
+
+					var bottom_fragment_position : Vector3i = head - Vector3i(0, j + 1, 0) * Fragment.SIZE;
+					view.append(bottom_fragment_position)
+
+			if TILE_HORIZONTAL:
+				head += Vector3i(direction.x, 0, direction.y) * Fragment.SIZE
+				view.append(head)
+				steps_in_direction -= 1
+				if steps_in_direction == 0: # Spiral iteration logic
+					# Change direction and reset steps
+					if direction == Vector2i(1, 0):  # Right
+						direction = Vector2i(0, 1)
+					elif direction == Vector2i(0, 1):
+						direction = Vector2i(-1, 0)
+						step += 1
+					elif direction == Vector2i(-1, 0):  # Left
+						direction = Vector2i(0, -1)
+					elif direction == Vector2i(0, -1):  # Up
+						direction = Vector2i(1, 0)
+						step += 1
+					steps_in_direction = step  # Reset steps for the new direction
+
+		# Queue free fragments that are no longer in view
+		for key in active_fragments.keys():
+			if key in view:
+				if not active_fragments[key].rendered:
+					active_fragments[key].render(grab_data.call(key, Fragment.SIZE), key, self)
+				continue
+			active_fragments[key].queue_free()
+			active_fragments.erase(key)
+
+		# Instantiate fragments that are visible but not rendered yet
+		for fragment in view:
+			if active_fragments.has(fragment): continue
+			var fragment_object : StaticBody3D = fragment_tscn.instantiate()
+			active_fragments[fragment] = fragment_object
+
+
+func _process(_delta : float) -> void:
+	if not initialized or paused: return
+
+	current_pivot_snapped_position = World.snap_to_grid(PIVOT.get_global_position())
+	if not TILE_VERTICAL: current_pivot_snapped_position.y = 0
+	if not TILE_HORIZONTAL:
+		current_pivot_snapped_position.x = 0
+		current_pivot_snapped_position.z = 0
+
+func _exit_tree() -> void:
+	active = false; pause();
+	gen_thread.wait_to_finish()
 
 
 func pause():    paused = true
@@ -48,14 +114,11 @@ func unpause():  paused = false
 func togpause(): paused = !paused # This is my favourite
 
 
-func test_render() -> StaticBody3D:
-	var fragment : StaticBody3D = fragment_tscn.instantiate()
-	add_child(fragment)
+# Static methods —————————————————————————
 
-	fragment.set_as_top_level(true)
-	fragment.set_global_position(Vector3(0, 0, 0))
-	fragment.set_visible(false)
+static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
+	var division := Vector3(reference_position) / Vector3(Fragment.SIZE)
+	var flooored : Vector3 = floor(division)
+	var multiply := flooored * Vector3(Fragment.SIZE)
 
-	fragment.render(grab_data_for.call(Vector3(0, 0, 0)))
-
-	return fragment
+	return Vector3i(multiply)

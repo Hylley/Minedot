@@ -1,6 +1,6 @@
 class_name math
 
-static func gcd(n1 : int, n2: int):
+static func gcd(n1 : int, n2: int) -> int:
 	var hcf : int = 1
 
 	if n2 > n1:
