@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://ru18ic803h7i"]
+
+[ext_resource type="Script" path="res://scripts/world/world_fragment.gd" id="1_m75d2"]
+
+[node name="Fragment" type="StaticBody3D"]
+visible = false
+script = ExtResource("1_m75d2")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]

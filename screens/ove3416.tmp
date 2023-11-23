@@ -1,0 +1,29 @@
+[gd_scene load_steps=6 format=3 uid="uid://cva6ylyhiwug2"]
+
+[ext_resource type="PackedScene" uid="uid://bioaaipma8gml" path="res://scenes/world.tscn" id="1_ophlw"]
+[ext_resource type="Script" path="res://scripts/game/overworld.gd" id="1_v8bjq"]
+[ext_resource type="PackedScene" uid="uid://bhyvgfmd4flsd" path="res://scenes/player.tscn" id="2_qb785"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_cctps"]
+size = Vector2(10, 10)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rt568"]
+size = Vector3(10, 1, 10)
+
+[node name="Overworld" type="Node3D"]
+script = ExtResource("1_v8bjq")
+
+[node name="World" parent="." instance=ExtResource("1_ophlw")]
+
+[node name="Player" parent="." instance=ExtResource("2_qb785")]
+
+[node name="Platform" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+visible = false
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Platform"]
+mesh = SubResource("PlaneMesh_cctps")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Platform"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_rt568")
