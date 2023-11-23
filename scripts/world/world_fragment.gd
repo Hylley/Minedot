@@ -41,7 +41,7 @@ func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
 	call_deferred('callback', parent, world_position)
 
 
-func callback(parent : Object, world_position : Vector3i):
+func callback(parent : Object, world_position : Vector3i) -> void:
 	parent.add_child(self)
 	set_as_top_level(true)
 	set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
@@ -100,7 +100,7 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 	surface.add_triangle_fan(([a, c, d]), ([uv[0], uv[2], uv[3]]))
 
 
-func get_state(relative_position):
+func get_state(relative_position) -> Placeable.state:
 	if Fragment.is_out_of_bounds(relative_position): return Placeable.state.air
 	return cubes[relative_position.x][relative_position.y][relative_position.z]
 

@@ -11,18 +11,18 @@ var gen_thread := Thread.new()
 static var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
-var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 255)
+var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 64)
 var HEIGHT_GROW : int = UserPreferences.get_preference('performance', 'height_grow', 6)
 
 var TILE_HORIZONTAL : bool
 var TILE_VERTICAL : bool
 var PIVOT : Node3D
-var current_pivot_snapped_position := Vector3i.ZERO
+var current_pivot_snapped_position := Vector3i(0, 0, 0)
 var grab_data : Callable # The world will call for this method to get data to load in fragments
 
 # Resources ———————————————————————————————————
 static var fragment_tscn := load('res://scenes/world_fragment.tscn')
-
+signal first_load
 
 # Generation methods ——————————————————————————
 
@@ -43,6 +43,7 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, data_sou
 
 func generate() -> void:
 	var view := []
+	var fl := true # First load flag
 
 	while active:
 		view.clear()
@@ -79,7 +80,13 @@ func generate() -> void:
 						step += 1
 					steps_in_direction = step  # Reset steps for the new direction
 
-		# Queue free fragments that are no longer in view
+		# Instantiate fragments that are visible but not rendered yet
+		for fragment in view:
+			if active_fragments.has(fragment): continue
+			var fragment_object : StaticBody3D = fragment_tscn.instantiate()
+			active_fragments[fragment] = fragment_object
+
+		# Queue free fragments that are no longer in view and render the new ones
 		for key in active_fragments.keys():
 			if key in view:
 				if not active_fragments[key].rendered:
@@ -88,21 +95,36 @@ func generate() -> void:
 			active_fragments[key].queue_free()
 			active_fragments.erase(key)
 
-		# Instantiate fragments that are visible but not rendered yet
-		for fragment in view:
-			if active_fragments.has(fragment): continue
-			var fragment_object : StaticBody3D = fragment_tscn.instantiate()
-			active_fragments[fragment] = fragment_object
+		if fl:
+				fl = false
+				call_deferred('emit_signal', 'first_load')
+
+
+func get_available_spawn_point() -> Vector3:
+	for fragment_position in active_fragments.keys():
+		var fragment_object : Fragment = active_fragments[fragment_position]
+
+		for x in range(Fragment.SIZE.x):
+			for y in range(Fragment.SIZE.y - 1, -1, -1):
+				for z in range(Fragment.SIZE.z):
+					var state : Placeable.state = fragment_object.get_state(Vector3i(x, y, z))
+					var state_up : Placeable.state = fragment_object.get_state(Vector3i(x, y + 1, z))
+					var state_down : Placeable.state = fragment_object.get_state(Vector3i(x, y + 2, z))
+
+					if state == Placeable.state.air or \
+					   state_up != Placeable.state.air or \
+					   state_down != Placeable.state.air: continue
+
+					return Vector3(fragment_position) + Vector3(x, y + 1, z)
+
+	push_warning('Unable to find available spawn locations at x = 0, z = 0')
+	return Vector3(0, 0, 0)
 
 
 func _process(_delta : float) -> void:
 	if not initialized or paused: return
 
-	current_pivot_snapped_position = World.snap_to_grid(PIVOT.get_global_position())
-	if not TILE_VERTICAL: current_pivot_snapped_position.y = 0
-	if not TILE_HORIZONTAL:
-		current_pivot_snapped_position.x = 0
-		current_pivot_snapped_position.z = 0
+	current_pivot_snapped_position = World.snap_to_grid(PIVOT.get_global_position(), TILE_HORIZONTAL, TILE_VERTICAL)
 
 func _exit_tree() -> void:
 	active = false; pause();
@@ -116,9 +138,14 @@ func togpause(): paused = !paused # This is my favourite
 
 # Static methods —————————————————————————
 
-static func snap_to_grid(reference_position : Vector3i) -> Vector3i:
+static func snap_to_grid(reference_position : Vector3i, tile_h : bool = true, tile_v : bool = true) -> Vector3i:
 	var division := Vector3(reference_position) / Vector3(Fragment.SIZE)
 	var flooored : Vector3 = floor(division)
 	var multiply := flooored * Vector3(Fragment.SIZE)
+
+	if not tile_v: multiply.y = 0
+	if not tile_h:
+		multiply.x = 0
+		multiply.z = 0
 
 	return Vector3i(multiply)
