@@ -19,7 +19,7 @@ var TILE_VERTICAL : bool
 var PIVOT : Node3D
 var current_pivot_snapped_position := Vector3i(0, 0, 0)
 var past_pivot_snapped_position:= Vector3i(0, 0, 0)
-var grab_data : Callable # The world will call for this method to get data to load in fragments
+var rules : Callable # The world will call for this method to get data to load in fragments
 
 # Resources ———————————————————————————————————
 static var fragment_tscn := load('res://scenes/world_fragment.tscn')
@@ -27,7 +27,7 @@ signal first_load
 
 # Generation methods ——————————————————————————
 
-func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, data_source : Callable, pivot : Node3D) -> void:
+func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, _rules : Callable, pivot : Node3D) -> void:
 	if initialized: push_warning(self.to_string() + ' has been initialized before; this may cause unexpected behavior.')
 
 	Fragment.SIZE = fragment_size
@@ -36,7 +36,7 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, data_sou
 	self.TILE_VERTICAL = tile_v
 	self.PIVOT = pivot
 
-	self.grab_data = data_source
+	self.rules = _rules
 
 	initialized = true
 	pause()
@@ -99,7 +99,7 @@ func generate() -> void:
 		for fragment_position in active_fragments.keys():
 			if fragment_position in view:
 				var fragment : Fragment = active_fragments[fragment_position]
-				if not fragment.rendered: fragment.cubes = grab_data.call(fragment_position, Fragment.SIZE)
+				if not fragment.rendered: fragment.cubes = World.generatrix(fragment_position, Fragment.SIZE, rules)
 
 				continue
 
@@ -160,7 +160,7 @@ func get_state_global(world_position : Vector3) -> Placeable.state:
 	var snapped_position := World.snap_to_grid(world_position)
 
 	var fragment := get_fragment(snapped_position)
-	if fragment == null: return Placeable.state.air
+	if fragment == null: return rules.call(world_position)
 
 	var local_position = Vector3i(world_position) - snapped_position
 	return fragment.get_state(local_position, snapped_position)
@@ -200,3 +200,14 @@ static func snap_to_grid(reference_position : Vector3i, tile_h : bool = true, ti
 		multiply.z = 0
 
 	return Vector3i(multiply)
+
+
+static func generatrix(world_position : Vector3i, size : Vector3i, _rules : Callable) -> Array:
+	var cubes = []; cubes.resize(size.x)
+	for x in range(0, size.x):
+		cubes[x] = []; cubes[x].resize(size.y)
+		for y in range(0, size.y):
+			cubes[x][y] = []; cubes[x][y].resize(size.z)
+			for z in range(0, size.z):
+				cubes[x][y][z] = _rules.call(world_position + Vector3i(x, y, z))
+	return cubes
