@@ -92,15 +92,22 @@ func generate() -> void:
 			active_fragments[fragment] = fragment_object
 
 		# Queue free fragments that are no longer in view and render the new ones
-		for fragment_position in active_fragments:
+		for fragment_position in active_fragments.keys():
 			if fragment_position in view:
-				if not active_fragments[fragment_position].rendered: active_fragments[fragment_position].render(grab_data.call(fragment_position, Fragment.SIZE), fragment_position, self)
+				var fragment : Fragment = active_fragments[fragment_position]
+
+				if not fragment.rendered and not first_run: fragment.render(grab_data.call(fragment_position, Fragment.SIZE), fragment_position, self)
+				elif not fragment.rendered and first_run: fragment.cubes = grab_data.call(fragment_position, Fragment.SIZE)
 				continue
 
 			active_fragments[fragment_position].queue_free()
 			active_fragments.erase(fragment_position)
 
 		if first_run:
+				for fragment_position in active_fragments:
+					var fragment : Fragment = active_fragments[fragment_position]
+					fragment.render(fragment.cubes, fragment_position, self)
+
 				first_run = false
 				call_deferred('emit_signal', 'first_load')
 				unpause()
@@ -148,7 +155,7 @@ func get_state_global(world_position : Vector3) -> Placeable.state:
 	var snapped_position := World.snap_to_grid(world_position)
 
 	var fragment := get_fragment(snapped_position)
-	if fragment == null: return Placeable.state.air
+	if fragment == null: return Placeable.state.stone
 
 	var local_position = Vector3i(snapped_position - snapped_position)
 

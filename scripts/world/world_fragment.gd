@@ -14,11 +14,10 @@ var surface := SurfaceTool.new()
 
 # Rendering methods ————————————————————————————
 
-func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
+func render(_cubes : Array, world_position : Vector3i, parent : Node3D = null) -> void:
 	cubes = _cubes
-
-	if mesh_instance == null: mesh_instance = self.get_node('MeshInstance3D')
-	else: mesh_instance.set_mesh(null)
+	mesh_instance = get_node('MeshInstance3D')
+	mesh_instance.set_mesh(null)
 
 	mesh = ArrayMesh.new()
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -39,7 +38,7 @@ func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
 	visible = true
 	rendered = true
 
-	call_deferred('callback', parent, world_position)
+	if parent != null: call_deferred('callback', parent, world_position)
 
 
 func callback(parent : Object, world_position : Vector3i) -> void:
@@ -47,6 +46,10 @@ func callback(parent : Object, world_position : Vector3i) -> void:
 	set_as_top_level(true)
 	set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
 	set_global_position(world_position)
+
+
+func refresh():
+	self.render(cubes, global_position)
 
 
 func render_cube(cube : Placeable.state, relative_position : Vector3i, world_position : Vector3i) -> void:
