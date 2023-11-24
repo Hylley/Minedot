@@ -125,6 +125,7 @@ func _process(_delta : float) -> void:
 
 func _exit_tree() -> void:
 	active = false; pause();
+	Fragment.WORLD = null; Fragment.SIZE = Vector3i.ZERO
 	gen_thread.wait_to_finish()
 
 
@@ -134,6 +135,69 @@ func togpause(): paused = !paused # This is my favourite
 
 
 # API methods —————————————————————————
+
+func delete(fragment_position : Vector3i, state_global_position : Vector3i) -> void:
+	insert(fragment_position, state_global_position, Placeable.state.air)
+	# Particle logic here
+
+
+func insert(fragment_position : Vector3i, state_global_position : Vector3i, state : Placeable.state) -> void:
+	var relative_position := state_global_position - fragment_position
+
+	if Fragment.is_out_of_bounds(relative_position):
+		fragment_position = World.snap_to_grid(state_global_position)
+		if not fragment_position in active_fragments:
+			push_warning('Unable to edit non-existent fragment ' + str(fragment_position) + '.')
+			return
+		relative_position = relative_position % Fragment.SIZE
+
+	active_fragments[fragment_position].set_state(relative_position, fragment_position, state)
+
+	if relative_position.x == 0:
+		refresh_fragment_if_exists(fragment_position - Vector3i(Fragment.SIZE.x, 0, 0))
+	elif relative_position.x == Fragment.SIZE.x - 1:
+		refresh_fragment_if_exists(fragment_position + Vector3i(Fragment.SIZE.x, 0, 0))
+
+	if relative_position.y == 0:
+		refresh_fragment_if_exists(fragment_position - Vector3i(0, Fragment.SIZE.y, 0))
+	elif relative_position.y == Fragment.SIZE.y - 1:
+		refresh_fragment_if_exists(fragment_position + Vector3i(0, Fragment.SIZE.y, 0))
+
+	if relative_position.z == 0:
+		refresh_fragment_if_exists(fragment_position - Vector3i(0, 0, Fragment.SIZE.z))
+	elif relative_position.z == Fragment.SIZE.z - 1:
+		refresh_fragment_if_exists(fragment_position + Vector3i(0, 0, Fragment.SIZE.z))
+
+
+func get_state_global(world_position : Vector3) -> Placeable.state:
+	var snapped_position := World.snap_to_grid(world_position)
+
+	var fragment := get_fragment(snapped_position)
+	if fragment == null and TILE_HORIZONTAL:     return rules.call(world_position)
+	if fragment == null and not TILE_HORIZONTAL: return Placeable.state.air
+
+	var local_position = Vector3i(world_position) - snapped_position
+	return fragment.get_state(local_position, snapped_position)
+
+
+func get_fragment(snapped_position : Vector3i) -> Fragment:
+	if not snapped_position in active_fragments: return null
+	return active_fragments[snapped_position]
+
+
+func refresh_fragment_if_exists(fragment_position : Vector3i):
+	if not fragment_position in active_fragments: return
+	active_fragments[fragment_position].call_deferred('refresh', fragment_position)
+
+
+func refresh_surroundings(fragment_position : Vector3i) -> void:
+	refresh_fragment_if_exists(fragment_position + Vector3i(Fragment.SIZE.x, 0, 0)) # Right fragment
+	refresh_fragment_if_exists(fragment_position - Vector3i(Fragment.SIZE.x, 0, 0)) # Left fragment
+	refresh_fragment_if_exists(fragment_position + Vector3i(0, Fragment.SIZE.y, 0)) # Top fragment
+	refresh_fragment_if_exists(fragment_position - Vector3i(0, Fragment.SIZE.y, 0)) # Bottom fragment
+	refresh_fragment_if_exists(fragment_position + Vector3i(0, 0, Fragment.SIZE.z)) # Front fragment
+	refresh_fragment_if_exists(fragment_position - Vector3i(0, 0, Fragment.SIZE.z)) # Back fragment
+
 
 func get_spawn_point() -> Vector3:
 	for fragment_position in active_fragments.keys():
@@ -154,37 +218,6 @@ func get_spawn_point() -> Vector3:
 
 	push_warning('Unable to find available spawn locations')
 	return Vector3(0, 0, 0)
-
-
-func get_state_global(world_position : Vector3) -> Placeable.state:
-	var snapped_position := World.snap_to_grid(world_position)
-
-	var fragment := get_fragment(snapped_position)
-	if fragment == null: return rules.call(world_position)
-
-	var local_position = Vector3i(world_position) - snapped_position
-	return fragment.get_state(local_position, snapped_position)
-
-
-func get_fragment(snapped_position : Vector3i) -> Fragment:
-	if not snapped_position in active_fragments: return null
-	return active_fragments[snapped_position]
-
-
-func refresh_surroundings(fragment_position : Vector3i) -> void:
-	var surroundings := \
-	[
-		fragment_position + Vector3i(Fragment.SIZE.x, 0, 0), # Right fragment
-		fragment_position - Vector3i(Fragment.SIZE.x, 0, 0), # Left fragment
-		fragment_position + Vector3i(0, Fragment.SIZE.y, 0), # Top fragment
-		fragment_position - Vector3i(0, Fragment.SIZE.y, 0), # Bottom fragment
-		fragment_position + Vector3i(0, 0, Fragment.SIZE.z), # Front fragment
-		fragment_position - Vector3i(0, 0, Fragment.SIZE.z)  # Back fragment
-	]
-
-	for surround in surroundings:
-		if not surround in active_fragments: continue
-		active_fragments[surround].call_deferred('refresh', surround)
 
 
 # Static methods —————————————————————————

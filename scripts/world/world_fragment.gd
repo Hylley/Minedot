@@ -44,10 +44,10 @@ func render(world_position : Vector3i, parent : Node3D = null) -> void:
 	visible = true
 	rendered = true
 
-	if parent != null: call_deferred('callback', parent, world_position)
+	if parent != null: call_deferred('switch_to_main_thread', parent, world_position)
 
 
-func callback(parent : Object, world_position : Vector3i) -> void:
+func switch_to_main_thread(parent : Object, world_position : Vector3i) -> void:
 	parent.add_child(self)
 	set_as_top_level(true)
 	set_process_thread_group(ProcessThreadGroup.PROCESS_THREAD_GROUP_MAIN_THREAD)
@@ -116,6 +116,10 @@ func get_state(relative_position : Vector3i, world_position : Vector3i) -> Place
 		return Fragment.WORLD.get_state_global(Vector3(world_position + relative_position))
 	return cubes[relative_position.x][relative_position.y][relative_position.z]
 
+
+func set_state(relative_position : Vector3i, world_position : Vector3i, new_state : Placeable.state) -> void:
+	cubes[relative_position.x][relative_position.y][relative_position.z] = new_state
+	render(world_position)
 
 # Static methods —————————————————————————
 

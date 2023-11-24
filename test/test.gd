@@ -81,6 +81,7 @@ static func full_solid_stone_rule(_world_position : Vector3i) -> Placeable.state
 
 static func superflat_stone_rule(world_position : Vector3i) -> Placeable.state:
 	var surface_boundary := 0
+
 	if world_position.y <= surface_boundary:
 		return Placeable.state.stone
 	return Placeable.state.air

@@ -1,11 +1,15 @@
-[gd_scene load_steps=3 format=3 uid="uid://bhyvgfmd4flsd"]
+[gd_scene load_steps=5 format=3 uid="uid://bhyvgfmd4flsd"]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_wi0t1"]
+[ext_resource type="Material" uid="uid://jgea8uoathid" path="res://assets/textures/cube_highlight.tres" id="2_lslw6"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gq0l5"]
 margin = 0.3
 radius = 0.3
 height = 1.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_lr3br"]
+size = Vector3(1.05, 1.05, 1.05)
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_wi0t1")
@@ -16,5 +20,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
 [node name="Camera3D" type="Camera3D" parent="Head"]
 current = true
 
+[node name="RayCast3D" type="RayCast3D" parent="Head/Camera3D"]
+target_position = Vector3(0, 0, -5)
+debug_shape_custom_color = Color(1, 0, 0, 1)
+debug_shape_thickness = 0
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_gq0l5")
+
+[node name="CubeHighlight" type="MeshInstance3D" parent="."]
+visible = false
+material_override = ExtResource("2_lslw6")
+cast_shadow = 0
+ignore_occlusion_culling = true
+gi_mode = 0
+mesh = SubResource("BoxMesh_lr3br")

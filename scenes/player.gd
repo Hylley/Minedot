@@ -3,7 +3,9 @@ class_name Player
 
 @onready var head := $Head
 @onready var camera := $Head/Camera3D
-var player_mode := 3
+@onready var raycast := $Head/Camera3D/RayCast3D
+@onready var cube_highlight := $CubeHighlight
+var player_mode := 0
 
 # Movement ———————————————————————————————————
 var speed : float
@@ -46,7 +48,7 @@ func _physics_process(delta : float) -> void:
 	if World.paused: return
 
 	handle_movement(delta)
-
+	handle_interaction(delta)
 
 func handle_movement(delta : float) -> void:
 	if player_mode == 0:
@@ -91,3 +93,29 @@ func handle_movement(delta : float) -> void:
 		camera.fov = lerp(camera.fov, target_fov, .1)
 
 	move_and_slide()
+
+
+func handle_interaction(_delta : float) -> void:
+	if raycast.is_colliding():
+		if raycast.get_collider() == null: return
+
+		var point : Vector3 = raycast.get_collision_point()
+		var norma : Vector3 = raycast.get_collision_normal()
+		var focusing : Vector3 = floor(point - norma * .5)
+
+		cube_highlight.global_position = focusing + Vector3(.5, .5, .5)
+		cube_highlight.visible = true
+
+		if Input.is_action_just_pressed('Hit'):
+			Fragment.WORLD.delete(raycast.get_collider().global_position, focusing)
+
+		if Input.is_action_just_pressed('Interact'):
+			var insert_position := Vector3i(focusing + norma)
+
+			if insert_position == Vector3i(floor(global_position)) or \
+			   insert_position == Vector3i(floor(global_position)) + Vector3i(0, 1, 0):
+				return
+
+			Fragment.WORLD.insert(raycast.get_collider().global_position, insert_position, Placeable.state.stone)
+		return
+	cube_highlight.visible = false
