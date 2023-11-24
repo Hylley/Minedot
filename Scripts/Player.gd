@@ -7,8 +7,8 @@ var player_mode := 3
 
 # Movement ———————————————————————————————————
 var speed : float
-const WALK_SPEED := 5.
-const SPRINT_SPEED := 8.
+const WALK_SPEED := 4.
+const SPRINT_SPEED := 6.
 const JUMP_VELOCITY := 8
 var SENSITIVITY : float = UserPreferences.get_preference('gameplay', 'sensitivity', .004)
 var gravity : float = ProjectSettings.get_setting("physics/3d/default_gravity")
@@ -30,15 +30,18 @@ func _ready() -> void:
 	if player_mode == 3: get_node('CollisionShape3D').disabled = true
 
 func _unhandled_input(event : InputEvent) -> void:
-	if event is InputEventMouseMotion:
+	if event is InputEventMouseMotion and not World.paused:
 		head.rotate_y(-event.relative.x * SENSITIVITY)
 		camera.rotate_x(-event.relative.y * SENSITIVITY)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-90), deg_to_rad(90))
 
 func _input(_event : InputEvent) -> void:
+	if World.paused: return
 	quick_zoom = Input.is_action_pressed('Quick Zoom') and not Input.is_action_just_released('Quick Zoom')
 
 func _physics_process(delta : float) -> void:
+	if World.paused: return
+
 	handle_movement(delta)
 
 func handle_movement(delta : float) -> void:

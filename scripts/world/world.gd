@@ -7,8 +7,8 @@ var active : bool = true
 static var paused : bool
 
 # Rendering ———————————————————————————————————
-var gen_thread := Thread.new()
-static var active_fragments := {}
+var gen_thread : Thread
+var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
 var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 64)
@@ -37,15 +37,19 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, data_sou
 	self.grab_data = data_source
 
 	initialized = true
+	pause()
 
+	gen_thread = Thread.new()
 	gen_thread.start(generate)
 
 
 func generate() -> void:
 	var view := []
-	var fl := true # First load flag
+	var first_run := true # First load flag
 
 	while active:
+		if not first_run and paused: continue
+
 		view.clear()
 		view.append(current_pivot_snapped_position)
 
@@ -87,17 +91,18 @@ func generate() -> void:
 			active_fragments[fragment] = fragment_object
 
 		# Queue free fragments that are no longer in view and render the new ones
-		for key in active_fragments.keys():
-			if key in view:
-				if not active_fragments[key].rendered:
-					active_fragments[key].render(grab_data.call(key, Fragment.SIZE), key, self)
+		for fragment_position in active_fragments:
+			if fragment_position in view:
+				if not active_fragments[fragment_position].rendered:
+					active_fragments[fragment_position].render(grab_data.call(fragment_position, Fragment.SIZE), fragment_position, self)
 				continue
-			active_fragments[key].queue_free()
-			active_fragments.erase(key)
+			active_fragments[fragment_position].queue_free()
+			active_fragments.erase(fragment_position)
 
-		if fl:
-				fl = false
+		if first_run:
+				first_run = false
 				call_deferred('emit_signal', 'first_load')
+				unpause()
 
 
 func get_available_spawn_point() -> Vector3:

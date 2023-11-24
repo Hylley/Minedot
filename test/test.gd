@@ -1,27 +1,72 @@
 extends Node
 class_name Test
 
-@onready var world  = $World
+var world_tscn  = preload('res://scenes/world.tscn')
 
+var vertices : int
 func _ready() -> void:
-	render_test()
+	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MINIMIZED)
 
-func render_test() -> void:
-	world.initialize(Vector3i(1, 1, 1), true, true, Test.fragdata_full_solid_stone, self)
-	var fragment : StaticBody3D = world.test_render()
+	await vertice_test()
+	await face_test()
 
-	print('[Rendering (1x1x1) fragment]')
-	var vertices : int = fragment.mesh_instance.mesh.get_faces().size()
+	get_tree().quit()
+
+
+func vertice_test() -> void:
+	await refresh()
+	var world : Node3D = world_tscn.instantiate()
+	world.CIRCULAR_RANGE = 0
+	add_child(world)
+
+	world.initialize(Vector3i(1, 1, 1), true, false, Test.fragdata_full_solid_stone, self)
+	await world.first_load
+
+	for fragment_position in world.active_fragments:
+		var fragment : StaticBody3D = world.active_fragments[fragment_position]
+
+		print('[Rendering (1x1x1) fragment]')
+		vertices = fragment.mesh_instance.mesh.get_faces().size()
+		if vertices == 0:
+			push_warning('There are no meshes being rendered.')
+			return;
+		@warning_ignore('integer_division')
+		print(str(vertices) + ' vertices adding up to ' + str(vertices / 3) + ' triangles to make ' + str(vertices / 3 / 2) + ' faces of one cube.')
+		if vertices > 24 and vertices <=36: push_warning('There are many useless vertices being loaded into memory.\n')
+		elif vertices > 36: push_error('What the fuck are you doing??.\n')
+
+	return
+
+
+func face_test() -> void:
+	await refresh()
+	var world : Node3D = world_tscn.instantiate()
+	world.CIRCULAR_RANGE = 1
+	add_child(world)
+
+	world.initialize(Vector3i(1, 1, 1), true, false, Test.fragdata_full_solid_stone, self)
+
+	print('[Rendering two (1x1x1) fragments]')
+
+	await world.first_load
+	var total_vertices := 0
+	for fragment_position in world.active_fragments:
+		var fragment : StaticBody3D = world.active_fragments[fragment_position]
+		total_vertices += fragment.mesh_instance.mesh.get_faces().size()
+
 	@warning_ignore('integer_division')
-	print(str(vertices) + ' vertices adding up to ' + str(vertices / 3) + ' triangles to make ' + str(vertices / 3 / 2) + ' faces of one cube.')
+	if total_vertices / float(vertices) >= 2:
+		push_warning('Hidden faces are being rendered between cubes.\n')
+	else:
+		push_warning('Hidden faces are not being rendered between cubes!\n')
 
-	if vertices < 3:
-		print('There are no faces being rendered.')
-		return;
+	return
 
-	if vertices > 24: print('There are too many useless vertices being loaded into memory.')
 
-	print('')
+func refresh():
+	for node in get_children():
+		self.remove_child(node)
+		node.queue_free()
 
 
 # Static methods ————————————————————————————
