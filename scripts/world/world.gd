@@ -11,7 +11,7 @@ var gen_thread : Thread
 var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
-var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 64) # Any prime number squared creates a perfect cube
+var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 121) # Any prime number squared creates a perfect cube
 var HEIGHT_GROW : int = UserPreferences.get_preference('performance', 'height_grow', 6)
 
 var TILE_HORIZONTAL : bool

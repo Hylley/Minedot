@@ -17,11 +17,11 @@ sky_material = SubResource("ProceduralSkyMaterial_6vl8y")
 
 [sub_resource type="Environment" id="Environment_f5y6e"]
 background_mode = 2
+background_color = Color(0.439216, 0.439216, 0.439216, 1)
 sky = SubResource("Sky_qyqjm")
 ambient_light_source = 2
-ambient_light_color = Color(0.498039, 0.498039, 0.498039, 1)
+ambient_light_color = Color(0.392157, 0.392157, 0.392157, 1)
 ssao_enabled = true
-ssao_radius = 2.0
 
 [node name="Overworld" type="Node3D"]
 script = ExtResource("1_v8bjq")
@@ -30,8 +30,9 @@ script = ExtResource("1_v8bjq")
 environment = SubResource("Environment_f5y6e")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
-transform = Transform3D(1, 0, 0, 0, 0.755042, 0.655677, 0, -0.655677, 0.755042, 0, 0, 0)
+transform = Transform3D(0.707107, 0.5, -0.5, 0, 0.707107, 0.707107, 0.707107, -0.5, 0.5, 0, 0, 0)
 shadow_enabled = true
+directional_shadow_mode = 1
 
 [node name="World" parent="." instance=ExtResource("1_ophlw")]
 

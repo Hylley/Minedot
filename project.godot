@@ -91,4 +91,6 @@ Debug={
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=3
+textures/canvas_textures/default_texture_filter=0
+textures/canvas_textures/default_texture_repeat=1
+textures/lossless_compression/force_png=true
