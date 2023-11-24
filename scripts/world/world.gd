@@ -38,9 +38,11 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, _rules :
 
 	self.rules = _rules
 
-	var fade_distance: int = Math.calc_fade_distance(fragment_size, CIRCULAR_RANGE)
-	Placeable.MATERIAL.set_distance_fade_min_distance(fade_distance)
-	Placeable.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
+	if UserPreferences.get_preference('decoration', 'fade_border_fragments', true):
+		Placeable.MATERIAL.set_distance_fade(BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
+		var fade_distance: int = Math.calc_fade_distance(fragment_size, CIRCULAR_RANGE)
+		Placeable.MATERIAL.set_distance_fade_min_distance(fade_distance)
+		Placeable.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
 
 	initialized = true
 	pause()

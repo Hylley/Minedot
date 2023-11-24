@@ -22,7 +22,6 @@ ambient_light_source = 2
 ambient_light_color = Color(0.498039, 0.498039, 0.498039, 1)
 ssao_enabled = true
 ssao_radius = 2.0
-ssao_intensity = 2.5
 
 [node name="Overworld" type="Node3D"]
 script = ExtResource("1_v8bjq")
