@@ -5,7 +5,7 @@ class_name Player
 @onready var camera := $Head/Camera3D
 @onready var raycast := $Head/Camera3D/RayCast3D
 @onready var cube_highlight := $CubeHighlight
-var player_mode := 0
+var player_mode := 3
 
 # Movement ———————————————————————————————————
 var speed : float
@@ -29,6 +29,7 @@ var quick_zoom := false
 
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	raycast.add_exception(self)
 	if player_mode == 3: get_node('CollisionShape3D').disabled = true
 
 
@@ -107,6 +108,7 @@ func handle_interaction(_delta : float) -> void:
 		cube_highlight.visible = true
 
 		if Input.is_action_just_pressed('Hit'):
+			cube_highlight.visible = false
 			Fragment.WORLD.delete(raycast.get_collider().global_position, focusing)
 
 		if Input.is_action_just_pressed('Interact'):
@@ -116,6 +118,6 @@ func handle_interaction(_delta : float) -> void:
 			   insert_position == Vector3i(floor(global_position)) + Vector3i(0, 1, 0):
 				return
 
-			Fragment.WORLD.insert(raycast.get_collider().global_position, insert_position, Placeable.state.stone)
+			Fragment.WORLD.insert(raycast.get_collider().global_position, insert_position, Placeable.state.grass)
 		return
 	cube_highlight.visible = false

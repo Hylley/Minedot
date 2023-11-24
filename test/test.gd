@@ -44,7 +44,7 @@ func face_test() -> void:
 	world.CIRCULAR_RANGE = 1
 	add_child(world)
 
-	world.initialize(Vector3i(1, 1, 1), true, false, Test.full_solid_stone_rule, self)
+	world.initialize(Vector3i(1, 1, 1), true, true, Test.full_solid_stone_rule, self)
 
 	print('[Rendering two (1x1x1) fragments]')
 

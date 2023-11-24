@@ -3,7 +3,7 @@ class_name Placeable
 
 const MATERIAL := preload("res://assets/textures/standard_material_3d.tres")
 static var TEXTURE_SIZE := Vector2i(MATERIAL.albedo_texture.get_width(), MATERIAL.albedo_texture.get_height())
-static var TILE_SIZE = 16 # math.gcd(TEXTURE_SIZE.x, TEXTURE_SIZE.y)
+static var TILE_SIZE = 16
 @warning_ignore('integer_division')
 static var RELATIVE_ATLAS_SIZE := Vector2i(TEXTURE_SIZE.x / TILE_SIZE, TEXTURE_SIZE.y / TILE_SIZE)
 

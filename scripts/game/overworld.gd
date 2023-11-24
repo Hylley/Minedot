@@ -5,7 +5,7 @@ extends Node3D
 
 
 func _ready() -> void:
-	world.initialize(Vector3i(8, 8, 8), true, true, Test.random_stone_rule, player)
+	world.initialize(Vector3i(8, 8, 8), true, true, Test.superflat_stone_rule, player)
 	world.first_load.connect(dump_player)
 
 func dump_player():
