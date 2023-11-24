@@ -94,9 +94,9 @@ func generate() -> void:
 		# Queue free fragments that are no longer in view and render the new ones
 		for fragment_position in active_fragments:
 			if fragment_position in view:
-				if not active_fragments[fragment_position].rendered:
-					active_fragments[fragment_position].render(grab_data.call(fragment_position, Fragment.SIZE), fragment_position, self)
+				if not active_fragments[fragment_position].rendered: active_fragments[fragment_position].render(grab_data.call(fragment_position, Fragment.SIZE), fragment_position, self)
 				continue
+
 			active_fragments[fragment_position].queue_free()
 			active_fragments.erase(fragment_position)
 
@@ -130,9 +130,9 @@ func get_spawn_point() -> Vector3:
 		for x in range(Fragment.SIZE.x):
 			for y in range(Fragment.SIZE.y - 1, -1, -1):
 				for z in range(Fragment.SIZE.z):
-					var state : Placeable.state = fragment_object.get_state(Vector3i(x, y, z))
-					var state_up : Placeable.state = fragment_object.get_state(Vector3i(x, y + 1, z))
-					var state_down : Placeable.state = fragment_object.get_state(Vector3i(x, y + 2, z))
+					var state : Placeable.state = fragment_object.get_state(Vector3i(x, y, z), fragment_position)
+					var state_up : Placeable.state = fragment_object.get_state(Vector3i(x, y + 1, z), fragment_position)
+					var state_down : Placeable.state = fragment_object.get_state(Vector3i(x, y + 2, z), fragment_position)
 
 					if state == Placeable.state.air or \
 					   state_up != Placeable.state.air or \
@@ -147,19 +147,17 @@ func get_spawn_point() -> Vector3:
 func get_state_global(world_position : Vector3) -> Placeable.state:
 	var snapped_position := World.snap_to_grid(world_position)
 
-	if not snapped_position in active_fragments:
-		# push_warning('Could not find fragment at ' + str(snapped_position) + '; returning [Placeable.state.air] instead.')
-		return Placeable.state.air
-
 	var fragment := get_fragment(snapped_position)
+	if fragment == null: return Placeable.state.air
+
 	var local_position = Vector3i(snapped_position - snapped_position)
 
-	return fragment.get_state(local_position)
+	return fragment.get_state(local_position, snapped_position)
 
 
 func get_fragment(snapped_position : Vector3i) -> Fragment:
+	if not snapped_position in active_fragments: return null
 	return active_fragments[snapped_position]
-
 
 # Static methods —————————————————————————
 

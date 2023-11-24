@@ -57,8 +57,6 @@ func face_test() -> void:
 	@warning_ignore('integer_division')
 	if total_vertices / float(vertices) >= 2:
 		push_warning('Hidden faces are being rendered between cubes.\n')
-	else:
-		push_warning('Hidden faces are *not* being rendered between cubes!\n')
 
 	return
 

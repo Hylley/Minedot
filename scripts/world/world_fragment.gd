@@ -6,7 +6,6 @@ static var SIZE  : Vector3i
 static var WORLD : World
 var cubes := []
 var rendered : bool
-var atomic_global_position : Vector3 # Is for read-only ok?? Don't judge me
 
 # Rendering variables —————————————————————————
 var mesh : ArrayMesh
@@ -17,7 +16,6 @@ var surface := SurfaceTool.new()
 
 func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
 	cubes = _cubes
-	atomic_global_position = world_position
 
 	if mesh_instance == null: mesh_instance = self.get_node('MeshInstance3D')
 	else: mesh_instance.set_mesh(null)
@@ -29,7 +27,7 @@ func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
 	for x in cubes.size():
 		for y in cubes[x].size():
 			for z in cubes[x][y].size():
-				render_cube(cubes[x][y][z], Vector3i(x, y, z))
+				render_cube(cubes[x][y][z], Vector3i(x, y, z), world_position)
 
 	surface.generate_normals(false)
 	surface.set_material(Placeable.MATERIAL)
@@ -51,7 +49,7 @@ func callback(parent : Object, world_position : Vector3i) -> void:
 	set_global_position(world_position)
 
 
-func render_cube(cube : Placeable.state, relative_position : Vector3i) -> void:
+func render_cube(cube : Placeable.state, relative_position : Vector3i, world_position : Vector3i) -> void:
 	if cube == null or cube == Placeable.state.air: return
 
 	var top_cube := relative_position + Vector3i(0, 1, 0)
@@ -61,24 +59,24 @@ func render_cube(cube : Placeable.state, relative_position : Vector3i) -> void:
 	var frn_cube := relative_position + Vector3i(0, 0, 1)
 	var bak_cube := relative_position - Vector3i(0, 0, 1)
 
-	if Fragment.is_transparent(get_state(top_cube)):
+	if Fragment.is_transparent(get_state(top_cube, world_position)):
 		create_face(Placeable.TOP_FACE, relative_position,
 					Placeable.MAP[cube][Placeable.top_texture], Placeable.MAP[cube][Placeable.rotate_uv_y])
-	if Fragment.is_transparent(get_state(bot_cube)):
+	if Fragment.is_transparent(get_state(bot_cube, world_position)):
 		create_face(Placeable.BOTTOM_FACE, relative_position,
 					Placeable.MAP[cube][Placeable.bottom_texture], Placeable.MAP[cube][Placeable.rotate_uv_y])
 
-	if Fragment.is_transparent(get_state(rig_cube)):
+	if Fragment.is_transparent(get_state(rig_cube, world_position)):
 		create_face(Placeable.RIGHT_FACE, relative_position,
 					Placeable.MAP[cube][Placeable.right_texture], Placeable.MAP[cube][Placeable.rotate_uv_x])
-	if Fragment.is_transparent(get_state(lef_cube)):
+	if Fragment.is_transparent(get_state(lef_cube, world_position)):
 		create_face(Placeable.LEFT_FACE, relative_position,
 					Placeable.MAP[cube][Placeable.left_texture], Placeable.MAP[cube][Placeable.rotate_uv_x])
 
-	if Fragment.is_transparent(get_state(frn_cube)):
+	if Fragment.is_transparent(get_state(frn_cube, world_position)):
 		create_face(Placeable.FRONT_FACE, relative_position,
 					Placeable.MAP[cube][Placeable.front_texture], Placeable.MAP[cube][Placeable.rotate_uv_z])
-	if Fragment.is_transparent(get_state(bak_cube)):
+	if Fragment.is_transparent(get_state(bak_cube, world_position)):
 		create_face(Placeable.BACK_FACE, relative_position,
 					Placeable.MAP[cube][Placeable.back_texture], Placeable.MAP[cube][Placeable.rotate_uv_z])
 
@@ -103,9 +101,9 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 	surface.add_triangle_fan(([a, c, d]), ([uv[0], uv[2], uv[3]]))
 
 
-func get_state(relative_position : Vector3i) -> Placeable.state:
+func get_state(relative_position : Vector3i, world_position : Vector3i) -> Placeable.state:
 	if Fragment.is_out_of_bounds(relative_position):
-		return Fragment.WORLD.get_state_global(atomic_global_position + Vector3(relative_position))
+		return Fragment.WORLD.get_state_global(Vector3(world_position + relative_position))
 	return cubes[relative_position.x][relative_position.y][relative_position.z]
 
 
