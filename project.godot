@@ -13,12 +13,11 @@ config_version=5
 config/name="Minedot"
 run/main_scene="res://screens/overworld.tscn"
 config/features=PackedStringArray("4.1", "Forward Plus")
-boot_splash/bg_color=Color(0.0313726, 0.0313726, 0.0313726, 1)
+boot_splash/bg_color=Color(0.101961, 0.101961, 0.101961, 1)
 boot_splash/image="res://splash.png"
-boot_splash/use_filter=false
 config/icon="res://icon.svg"
 config/windows_native_icon="res://icon.ico"
-boot_splash/minimum_display_time=3000
+boot_splash/minimum_display_time=5000
 
 [autoload]
 

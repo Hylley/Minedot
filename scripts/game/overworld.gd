@@ -9,4 +9,4 @@ func _ready() -> void:
 	world.first_load.connect(dump_player)
 
 func dump_player():
-	player.global_position = world.get_available_spawn_point() + Vector3(.5, 1, .5)
+	player.global_position = world.get_spawn_point() + Vector3(.5, 1, .5)

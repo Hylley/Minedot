@@ -1,6 +1,6 @@
 extends Node
 
-static var config := ConfigFile.new()
+var config := ConfigFile.new()
 
 func _ready() -> void:
 	if config.load("user://preferences.cfg") == OK: return

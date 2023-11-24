@@ -3,7 +3,7 @@ class_name Player
 
 @onready var head := $Head
 @onready var camera := $Head/Camera3D
-var player_mode := 0
+var player_mode := 3
 
 # Movement ———————————————————————————————————
 var speed : float

@@ -30,6 +30,7 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, data_sou
 	if initialized: push_warning(self.to_string() + ' has been initialized before; this may cause unexpected behavior.')
 
 	Fragment.SIZE = fragment_size
+	Fragment.WORLD = self
 	self.TILE_HORIZONTAL = tile_h
 	self.TILE_VERTICAL = tile_v
 	self.PIVOT = pivot
@@ -105,7 +106,24 @@ func generate() -> void:
 				unpause()
 
 
-func get_available_spawn_point() -> Vector3:
+func _process(_delta : float) -> void:
+	if not initialized or paused: return
+
+	current_pivot_snapped_position = World.snap_to_grid(PIVOT.get_global_position(), TILE_HORIZONTAL, TILE_VERTICAL)
+
+func _exit_tree() -> void:
+	active = false; pause();
+	gen_thread.wait_to_finish()
+
+
+func pause():    paused = true
+func unpause():  paused = false
+func togpause(): paused = !paused # This is my favourite
+
+
+# API methods —————————————————————————
+
+func get_spawn_point() -> Vector3:
 	for fragment_position in active_fragments.keys():
 		var fragment_object : Fragment = active_fragments[fragment_position]
 
@@ -122,23 +140,25 @@ func get_available_spawn_point() -> Vector3:
 
 					return Vector3(fragment_position) + Vector3(x, y + 1, z)
 
-	push_warning('Unable to find available spawn locations at x = 0, z = 0')
+	push_warning('Unable to find available spawn locations')
 	return Vector3(0, 0, 0)
 
 
-func _process(_delta : float) -> void:
-	if not initialized or paused: return
+func get_state_global(world_position : Vector3) -> Placeable.state:
+	var snapped_position := World.snap_to_grid(world_position)
 
-	current_pivot_snapped_position = World.snap_to_grid(PIVOT.get_global_position(), TILE_HORIZONTAL, TILE_VERTICAL)
+	if not snapped_position in active_fragments:
+		# push_warning('Could not find fragment at ' + str(snapped_position) + '; returning [Placeable.state.air] instead.')
+		return Placeable.state.air
 
-func _exit_tree() -> void:
-	active = false; pause();
-	gen_thread.wait_to_finish()
+	var fragment := get_fragment(snapped_position)
+	var local_position = Vector3i(snapped_position - snapped_position)
+
+	return fragment.get_state(local_position)
 
 
-func pause():    paused = true
-func unpause():  paused = false
-func togpause(): paused = !paused # This is my favourite
+func get_fragment(snapped_position : Vector3i) -> Fragment:
+	return active_fragments[snapped_position]
 
 
 # Static methods —————————————————————————

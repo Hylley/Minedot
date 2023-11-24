@@ -2,9 +2,11 @@ extends Node3D
 class_name Fragment
 
 # Variables ———————————————————————————————————
-static var SIZE : Vector3i
+static var SIZE  : Vector3i
+static var WORLD : World
 var cubes := []
 var rendered : bool
+var atomic_global_position : Vector3 # Is for read-only ok?? Don't judge me
 
 # Rendering variables —————————————————————————
 var mesh : ArrayMesh
@@ -15,6 +17,7 @@ var surface := SurfaceTool.new()
 
 func render(_cubes : Array, world_position : Vector3i, parent : Node3D) -> void:
 	cubes = _cubes
+	atomic_global_position = world_position
 
 	if mesh_instance == null: mesh_instance = self.get_node('MeshInstance3D')
 	else: mesh_instance.set_mesh(null)
@@ -100,8 +103,9 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 	surface.add_triangle_fan(([a, c, d]), ([uv[0], uv[2], uv[3]]))
 
 
-func get_state(relative_position) -> Placeable.state:
-	if Fragment.is_out_of_bounds(relative_position): return Placeable.state.air
+func get_state(relative_position : Vector3i) -> Placeable.state:
+	if Fragment.is_out_of_bounds(relative_position):
+		return Fragment.WORLD.get_state_global(atomic_global_position + Vector3(relative_position))
 	return cubes[relative_position.x][relative_position.y][relative_position.z]
 
 
@@ -127,6 +131,7 @@ static func rotate_uv(default_uv_array : Array, cube_world_position : Vector3i) 
 	if pivot % 2 == 0: rotated_uvs.reverse()
 
 	return rotated_uvs
+
 
 static func join_duplicates(_mesh : Mesh) -> ArrayMesh:
 	var data_tool := MeshDataTool.new()
