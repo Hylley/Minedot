@@ -11,7 +11,7 @@ var gen_thread : Thread
 var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
-var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 32)
+var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 64)
 var HEIGHT_GROW : int = UserPreferences.get_preference('performance', 'height_grow', 6)
 
 var TILE_HORIZONTAL : bool
@@ -235,6 +235,8 @@ static func snap_to_grid(reference_position : Vector3i, tile_h : bool = true, ti
 	return Vector3i(multiply)
 
 
+# World generation algorithms —————————————————————————
+
 static func generatrix(world_position : Vector3i, size : Vector3i, _rules : Callable) -> Array:
 	var cubes = []; cubes.resize(size.x)
 	for x in range(0, size.x):
@@ -244,3 +246,18 @@ static func generatrix(world_position : Vector3i, size : Vector3i, _rules : Call
 			for z in range(0, size.z):
 				cubes[x][y][z] = _rules.call(world_position + Vector3i(x, y, z))
 	return cubes
+
+
+static func superflat(world_position : Vector3i) -> Placeable.state:
+	var surface_boundary := 6
+
+	if world_position.y == surface_boundary:
+		return Placeable.state.grass
+
+	if world_position.y < sqrt(surface_boundary) * randf() * 2:
+		return Placeable.state.stone
+
+	if world_position.y < surface_boundary:
+		return Placeable.state.dirt
+
+	return Placeable.state.air
