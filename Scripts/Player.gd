@@ -3,7 +3,7 @@ class_name Player
 
 @onready var head := $Head
 @onready var camera := $Head/Camera3D
-var player_mode := 3
+var player_mode := 0
 
 # Movement ———————————————————————————————————
 var speed : float
@@ -19,15 +19,16 @@ const BOB_AMP := 0.08
 var t_bob := 0.0
 
 # Field of view ——————————————————————————————
-const BASE_FOV := 90.0
+var BASE_FOV : float = UserPreferences.get_preference('gameplay', 'fov', 90.)
 const FOV_CHANGE := 2
 const QUICK_ZOOM_FOV_CHANGE := -50
 var quick_zoom := false
 
+
 func _ready() -> void:
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-
 	if player_mode == 3: get_node('CollisionShape3D').disabled = true
+
 
 func _unhandled_input(event : InputEvent) -> void:
 	if event is InputEventMouseMotion and not World.paused:
@@ -35,14 +36,17 @@ func _unhandled_input(event : InputEvent) -> void:
 		camera.rotate_x(-event.relative.y * SENSITIVITY)
 		camera.rotation.x = clamp(camera.rotation.x, deg_to_rad(-90), deg_to_rad(90))
 
+
 func _input(_event : InputEvent) -> void:
 	if World.paused: return
 	quick_zoom = Input.is_action_pressed('Quick Zoom') and not Input.is_action_just_released('Quick Zoom')
+
 
 func _physics_process(delta : float) -> void:
 	if World.paused: return
 
 	handle_movement(delta)
+
 
 func handle_movement(delta : float) -> void:
 	if player_mode == 0:
