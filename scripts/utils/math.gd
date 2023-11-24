@@ -1,4 +1,4 @@
-class_name math
+class_name Math
 
 static func gcd(n1 : int, n2: int) -> int:
 	var hcf : int = 1
