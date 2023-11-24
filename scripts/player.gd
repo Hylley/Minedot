@@ -5,7 +5,7 @@ class_name Player
 @onready var camera := $Head/Camera3D
 @onready var raycast := $Head/Camera3D/RayCast3D
 @onready var cube_highlight := $CubeHighlight
-var player_mode := 0
+var player_mode := 3
 
 # Movement ———————————————————————————————————
 var speed : float
