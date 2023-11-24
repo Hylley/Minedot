@@ -98,17 +98,21 @@ static func fragdata_full_solid_stone(_fragment_global_position : Vector3i, size
 
 static func fragdata_superflat_stone(fragment_global_position : Vector3i, size : Vector3i) -> Array:
 	var cubes = []; cubes.resize(size.x)
+	var surface_boundary := 0
+
 	for x in range(0, size.x):
 		cubes[x] = []; cubes[x].resize(size.y)
 		for y in range(0, size.y):
 			cubes[x][y] = []; cubes[x][y].resize(size.z)
 			for z in range(0, size.z):
 				var cube_world_position := fragment_global_position + Vector3i(x, y, z)
-				var surface_boundary := 7
 
 				if cube_world_position.y <= surface_boundary:
 					cubes[x][y][z] = Placeable.state.stone
 					continue
 				cubes[x][y][z] = Placeable.state.air
+
+	cubes[0][1][0] = Placeable.state.stone
+
 
 	return cubes

@@ -11,13 +11,14 @@ var gen_thread : Thread
 var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
-var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 64)
+var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 32)
 var HEIGHT_GROW : int = UserPreferences.get_preference('performance', 'height_grow', 6)
 
 var TILE_HORIZONTAL : bool
 var TILE_VERTICAL : bool
 var PIVOT : Node3D
 var current_pivot_snapped_position := Vector3i(0, 0, 0)
+var past_pivot_snapped_position:= Vector3i(0, 0, 0)
 var grab_data : Callable # The world will call for this method to get data to load in fragments
 
 # Resources ———————————————————————————————————
@@ -49,10 +50,13 @@ func generate() -> void:
 	var first_run := true # First load flag
 
 	while active:
-		if not first_run and paused: continue
+		if not first_run:
+			if paused: continue
+			if current_pivot_snapped_position == past_pivot_snapped_position: continue
 
 		view.clear()
 		view.append(current_pivot_snapped_position)
+		past_pivot_snapped_position = current_pivot_snapped_position
 
 		var head = current_pivot_snapped_position;
 		var direction : Vector2i = Vector2i(1, 0)
@@ -95,19 +99,20 @@ func generate() -> void:
 		for fragment_position in active_fragments.keys():
 			if fragment_position in view:
 				var fragment : Fragment = active_fragments[fragment_position]
+				if not fragment.rendered: fragment.cubes = grab_data.call(fragment_position, Fragment.SIZE)
 
-				if not fragment.rendered and not first_run: fragment.render(grab_data.call(fragment_position, Fragment.SIZE), fragment_position, self)
-				elif not fragment.rendered and first_run: fragment.cubes = grab_data.call(fragment_position, Fragment.SIZE)
 				continue
 
 			active_fragments[fragment_position].queue_free()
 			active_fragments.erase(fragment_position)
 
-		if first_run:
-				for fragment_position in active_fragments:
-					var fragment : Fragment = active_fragments[fragment_position]
-					fragment.render(fragment.cubes, fragment_position, self)
+		for fragment_position in active_fragments:
+				var fragment : Fragment = active_fragments[fragment_position]
+				if fragment.rendered: continue
+				fragment.render(fragment_position, self)
+				# refresh_surroundings(fragment_position)
 
+		if first_run:
 				first_run = false
 				call_deferred('emit_signal', 'first_load')
 				unpause()
@@ -155,16 +160,32 @@ func get_state_global(world_position : Vector3) -> Placeable.state:
 	var snapped_position := World.snap_to_grid(world_position)
 
 	var fragment := get_fragment(snapped_position)
-	if fragment == null: return Placeable.state.stone
+	if fragment == null: return Placeable.state.air
 
-	var local_position = Vector3i(snapped_position - snapped_position)
-
+	var local_position = Vector3i(world_position) - snapped_position
 	return fragment.get_state(local_position, snapped_position)
 
 
 func get_fragment(snapped_position : Vector3i) -> Fragment:
 	if not snapped_position in active_fragments: return null
 	return active_fragments[snapped_position]
+
+
+func refresh_surroundings(fragment_position : Vector3i) -> void:
+	var surroundings := \
+	[
+		fragment_position + Vector3i(Fragment.SIZE.x, 0, 0), # Right fragment
+		fragment_position - Vector3i(Fragment.SIZE.x, 0, 0), # Left fragment
+		fragment_position + Vector3i(0, Fragment.SIZE.y, 0), # Top fragment
+		fragment_position - Vector3i(0, Fragment.SIZE.y, 0), # Bottom fragment
+		fragment_position + Vector3i(0, 0, Fragment.SIZE.z), # Front fragment
+		fragment_position - Vector3i(0, 0, Fragment.SIZE.z)  # Back fragment
+	]
+
+	for surround in surroundings:
+		if not surround in active_fragments: continue
+		active_fragments[surround].call_deferred('refresh', surround)
+
 
 # Static methods —————————————————————————
 

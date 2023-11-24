@@ -9,17 +9,22 @@ var rendered : bool
 
 # Rendering variables —————————————————————————
 var mesh : ArrayMesh
+var surface : SurfaceTool
 var mesh_instance : MeshInstance3D
-var surface := SurfaceTool.new()
 
 # Rendering methods ————————————————————————————
 
-func render(_cubes : Array, world_position : Vector3i, parent : Node3D = null) -> void:
-	cubes = _cubes
-	mesh_instance = get_node('MeshInstance3D')
-	mesh_instance.set_mesh(null)
+func render(world_position : Vector3i, parent : Node3D = null) -> void:
+	if cubes == []: return
+
+	if mesh_instance != null:
+		mesh_instance.queue_free()
+		mesh_instance = null
 
 	mesh = ArrayMesh.new()
+	surface = SurfaceTool.new()
+	mesh_instance = MeshInstance3D.new()
+
 	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	surface.set_smooth_group(-1)
 
@@ -32,6 +37,7 @@ func render(_cubes : Array, world_position : Vector3i, parent : Node3D = null) -
 	surface.set_material(Placeable.MATERIAL)
 	surface.commit(mesh)
 	mesh_instance.set_mesh(mesh)
+	add_child(mesh_instance)
 
 	if mesh.get_surface_count() != 0: mesh_instance.call_deferred('create_trimesh_collision')
 
@@ -48,8 +54,9 @@ func callback(parent : Object, world_position : Vector3i) -> void:
 	set_global_position(world_position)
 
 
-func refresh():
-	self.render(cubes, global_position)
+func refresh(world_position : Vector3i) -> void:
+	if not rendered: return
+	self.render(world_position)
 
 
 func render_cube(cube : Placeable.state, relative_position : Vector3i, world_position : Vector3i) -> void:

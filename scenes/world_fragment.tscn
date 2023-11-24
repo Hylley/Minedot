@@ -5,5 +5,3 @@
 [node name="Fragment" type="StaticBody3D"]
 visible = false
 script = ExtResource("1_m75d2")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
