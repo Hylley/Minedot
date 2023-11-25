@@ -104,8 +104,6 @@ func handle_movement(delta : float) -> void:
 
 
 func handle_interaction(_delta : float) -> void:
-	if not active: return
-
 	if raycast.is_colliding():
 		if raycast.get_collider() == null: return
 
@@ -115,6 +113,8 @@ func handle_interaction(_delta : float) -> void:
 
 		cube_highlight.global_position = focusing + Vector3(.5, .5, .5)
 		cube_highlight.visible = true
+
+		if not active: return
 
 		if Input.is_action_just_pressed('hit'):
 			cube_highlight.visible = false
