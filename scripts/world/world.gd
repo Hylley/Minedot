@@ -45,7 +45,7 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, _rules :
 		Placeable.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
 
 	initialized = true
-	pause()
+	World.pause()
 
 	gen_thread = Thread.new()
 	gen_thread.start(generate)
@@ -121,7 +121,7 @@ func generate() -> void:
 		if first_run:
 				first_run = false
 				call_deferred('emit_signal', 'first_load')
-				unpause()
+				World.unpause()
 
 
 func _process(_delta : float) -> void:
@@ -130,14 +130,14 @@ func _process(_delta : float) -> void:
 	current_pivot_snapped_position = World.snap_to_grid(PIVOT.get_global_position(), TILE_HORIZONTAL, TILE_VERTICAL)
 
 func _exit_tree() -> void:
-	active = false; pause();
+	active = false; World.pause();
 	Fragment.WORLD = null; Fragment.SIZE = Vector3i.ZERO
 	gen_thread.wait_to_finish()
 
 
-func pause():    paused = true
-func unpause():  paused = false
-func togpause(): paused = !paused # This is my favourite
+static func pause():    paused = true
+static func unpause():  paused = false
+static func toggle_pause(): paused = !paused # This is my favourite
 
 
 # API methods —————————————————————————

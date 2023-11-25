@@ -1,7 +1,7 @@
 shader_type canvas_item;
 
-uniform float blur: hint_range(0.0, 5.0);
-uniform float grain = 0.1;
+uniform float blur : hint_range(0.0, 5.0) = 2.;
+uniform float grain = 0.03;
 
 uniform sampler2D SCREEN_TEXTURE : hint_screen_texture, filter_linear_mipmap;
 

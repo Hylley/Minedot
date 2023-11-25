@@ -1,14 +1,23 @@
-[gd_scene load_steps=4 format=3 uid="uid://ckgboufqdfufk"]
+[gd_scene load_steps=8 format=3 uid="uid://ckgboufqdfufk"]
 
+[ext_resource type="Texture2D" uid="uid://bry0jeuqx8qwu" path="res://assets/textures/ui_fill.png" id="1_0rs4a"]
+[ext_resource type="Script" path="res://scripts/inventory/inventory.gd" id="1_mviag"]
 [ext_resource type="Texture2D" uid="uid://da777w8wclyx2" path="res://assets/textures/ui_outline.png" id="1_to43e"]
 [ext_resource type="Shader" path="res://assets/shaders/panel.gdshader" id="2_ebl7e"]
+[ext_resource type="PackedScene" uid="uid://dt5hyejmfkt2u" path="res://scenes/ui/slot.tscn" id="3_00r8y"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mrdd1"]
+shader = ExtResource("2_ebl7e")
+shader_parameter/blur = 2.0
+shader_parameter/grain = 0.03
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_gpmxd"]
 shader = ExtResource("2_ebl7e")
-shader_parameter/blur = 1.0
+shader_parameter/blur = 2.0
 shader_parameter/grain = 0.03
 
 [node name="Inventory" type="CanvasLayer"]
+script = ExtResource("1_mviag")
 
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
@@ -26,14 +35,234 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Control/MarginContainer"]
+[node name="VSplitContainer" type="VSplitContainer" parent="Control/MarginContainer"]
 layout_mode = 2
-size_flags_vertical = 8
+collapsed = true
+dragger_visibility = 2
 
-[node name="NinePatchRect" type="NinePatchRect" parent="Control/MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(630, 70)
+[node name="Inventory" type="CenterContainer" parent="Control/MarginContainer/VSplitContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="NinePatchRect" type="NinePatchRect" parent="Control/MarginContainer/VSplitContainer/Inventory"]
+custom_minimum_size = Vector2(600, 550)
+layout_mode = 2
+texture = ExtResource("1_0rs4a")
+patch_margin_left = 3
+patch_margin_top = 3
+patch_margin_right = 3
+patch_margin_bottom = 3
+
+[node name="Panel Effect" type="ColorRect" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect"]
+z_index = -1
+material = SubResource("ShaderMaterial_mrdd1")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VSplitContainer" type="VSplitContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer"]
+layout_mode = 2
+collapsed = true
+dragger_visibility = 2
+
+[node name="Equip & Craft" type="HSplitContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+dragger_visibility = 1
+
+[node name="Equip" type="GridContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft"]
+layout_mode = 2
+columns = 3
+
+[node name="Control" type="Control" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip"]
+modulate = Color(1, 1, 1, 0)
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(65, 65)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Equip Slot 1" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Control2" type="Control" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip"]
+modulate = Color(1, 1, 1, 0)
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(65, 65)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Equip Slot 2" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Equip Slot 3" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Equip Slot 4" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Control3" type="Control" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip"]
+modulate = Color(1, 1, 1, 0)
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(65, 65)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Equip Slot 5" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Control4" type="Control" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip"]
+modulate = Color(1, 1, 1, 0)
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(65, 65)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Control5" type="Control" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip"]
+modulate = Color(1, 1, 1, 0)
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(65, 65)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Equip Slot 6" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Equip" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Craft" type="MarginContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft"]
+layout_mode = 2
+theme_override_constants/margin_left = 65
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 35
+
+[node name="Slots" type="GridContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Craft"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+columns = 2
+
+[node name="Craft Slot 1" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Craft/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Craft Slot 2" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Craft/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Craft Slot 3" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Craft/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Craft Slot 4" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Craft/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Craft Slot 5" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Equip & Craft/Craft" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+
+[node name="Slots" type="GridContainer" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer"]
+layout_direction = 2
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_stretch_ratio = 0.0
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 8
+
+[node name="Inventory Slot 1" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 2" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 3" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 4" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 5" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 6" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 7" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 8" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 9" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 10" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 11" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 12" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 13" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 14" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 15" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 16" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 17" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 18" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 19" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 20" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 21" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 22" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 23" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Inventory Slot 24" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
+layout_mode = 2
+
+[node name="Hotbar" type="NinePatchRect" parent="Control/MarginContainer/VSplitContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 70)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
@@ -44,7 +273,7 @@ patch_margin_top = 3
 patch_margin_right = 3
 patch_margin_bottom = 3
 
-[node name="Panel" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect"]
+[node name="Panel Effect" type="ColorRect" parent="Control/MarginContainer/VSplitContainer/Hotbar"]
 z_index = -2
 material = SubResource("ShaderMaterial_gpmxd")
 layout_mode = 1
@@ -54,69 +283,55 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GridContainer" type="GridContainer" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel"]
+[node name="GridContainer" type="GridContainer" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect"]
 layout_direction = 2
 layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
+anchors_preset = 15
+anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -315.0
-offset_top = -70.0
-offset_right = 315.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 8
 size_flags_stretch_ratio = 0.0
-theme_override_constants/h_separation = 10
-columns = 9
+theme_override_constants/h_separation = 0
+columns = 8
 
-[node name="ColorRect" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 1" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect2" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 2" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect3" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 3" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect4" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 4" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect7" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 5" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect8" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 6" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect5" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 7" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
 
-[node name="ColorRect6" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
-visible = false
-modulate = Color(1, 1, 1, 0.27451)
+[node name="Hotbar Slot 8" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
+self_modulate = Color(1, 1, 1, 0)
 custom_minimum_size = Vector2(70, 70)
 layout_mode = 2
