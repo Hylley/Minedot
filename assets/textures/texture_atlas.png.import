@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://w1ukum72u3h2"
-path="res://.godot/imported/cube_highlight.png-41581f066eebd34cbc8a6f3f54d5741f.ctex"
+uid="uid://6mutmtkul47o"
+path="res://.godot/imported/texture_atlas.png-57131cf28268c725cfee5d3286548056.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/textures/cube_highlight.png"
-dest_files=["res://.godot/imported/cube_highlight.png-41581f066eebd34cbc8a6f3f54d5741f.ctex"]
+source_file="res://assets/textures/texture_atlas.png"
+dest_files=["res://.godot/imported/texture_atlas.png-57131cf28268c725cfee5d3286548056.ctex"]
 
 [params]
 

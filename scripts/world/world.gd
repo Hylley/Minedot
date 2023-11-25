@@ -11,7 +11,7 @@ var gen_thread : Thread
 var active_fragments := {}
 static var random := RandomNumberGenerator.new()
 
-var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 121) # Any prime number squared creates a perfect cube
+var CIRCULAR_RANGE  : int = UserPreferences.get_preference('performance', 'circular_range', 9) # Any prime number squared creates a perfect cube
 var HEIGHT_GROW : int = UserPreferences.get_preference('performance', 'height_grow', 6)
 
 var TILE_HORIZONTAL : bool
@@ -38,9 +38,9 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, _rules :
 
 	self.rules = _rules
 
-	if UserPreferences.get_preference('decoration', 'fade_border_fragments', true):
+	if UserPreferences.get_preference('decoration', 'fade_border_fragments', false):
 		Placeable.MATERIAL.set_distance_fade(BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
-		var fade_distance: int = Math.calc_fade_distance(fragment_size, CIRCULAR_RANGE)
+		var fade_distance: int = Math.calc_fade_distance(fragment_size, CIRCULAR_RANGE) # Need some improvements
 		Placeable.MATERIAL.set_distance_fade_min_distance(fade_distance)
 		Placeable.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
 
@@ -68,7 +68,7 @@ func generate() -> void:
 		var direction : Vector2i = Vector2i(1, 0)
 		var step := 1; var steps_in_direction := 1
 
-		for i in range(CIRCULAR_RANGE):
+		for i in range(CIRCULAR_RANGE - 1):
 			if TILE_VERTICAL:
 				for j in range(int(HEIGHT_GROW / 2.)):
 					var top_fragment_position : Vector3i = head + Vector3i(0, j + 1, 0) * Fragment.SIZE

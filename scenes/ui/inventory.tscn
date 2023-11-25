@@ -1,0 +1,122 @@
+[gd_scene load_steps=4 format=3 uid="uid://ckgboufqdfufk"]
+
+[ext_resource type="Texture2D" uid="uid://da777w8wclyx2" path="res://assets/textures/ui_outline.png" id="1_to43e"]
+[ext_resource type="Shader" path="res://assets/shaders/panel.gdshader" id="2_ebl7e"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gpmxd"]
+shader = ExtResource("2_ebl7e")
+shader_parameter/blur = 1.0
+shader_parameter/grain = 0.03
+
+[node name="Inventory" type="CanvasLayer"]
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Control/MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="NinePatchRect" type="NinePatchRect" parent="Control/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(630, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+texture = ExtResource("1_to43e")
+region_rect = Rect2(0, 0, 7, 7)
+patch_margin_left = 3
+patch_margin_top = 3
+patch_margin_right = 3
+patch_margin_bottom = 3
+
+[node name="Panel" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect"]
+z_index = -2
+material = SubResource("ShaderMaterial_gpmxd")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GridContainer" type="GridContainer" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel"]
+layout_direction = 2
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -315.0
+offset_top = -70.0
+offset_right = 315.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 4
+size_flags_vertical = 8
+size_flags_stretch_ratio = 0.0
+theme_override_constants/h_separation = 10
+columns = 9
+
+[node name="ColorRect" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect2" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect3" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect4" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect7" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect8" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect5" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+
+[node name="ColorRect6" type="ColorRect" parent="Control/MarginContainer/VBoxContainer/NinePatchRect/Panel/GridContainer"]
+visible = false
+modulate = Color(1, 1, 1, 0.27451)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
