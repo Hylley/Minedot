@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://dt5hyejmfkt2u"]
 
 [ext_resource type="Texture2D" uid="uid://da777w8wclyx2" path="res://assets/textures/ui_outline.png" id="1_v8xhi"]
-[ext_resource type="Script" path="res://scripts/inventory/slot.gd" id="2_suxjq"]
+[ext_resource type="Script" path="res://scripts/player/inventory/slot.gd" id="2_l844g"]
 [ext_resource type="FontFile" uid="uid://cmnq1yvelm2ey" path="res://assets/fonts/dogicapixel.ttf" id="3_gr1bp"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_u3eqq"]
@@ -13,11 +13,11 @@ shadow_color = Color(0, 0, 0, 1)
 [node name="Slot" type="NinePatchRect"]
 custom_minimum_size = Vector2(65, 65)
 texture = ExtResource("1_v8xhi")
-patch_margin_left = 3
-patch_margin_top = 3
-patch_margin_right = 3
-patch_margin_bottom = 3
-script = ExtResource("2_suxjq")
+patch_margin_left = 2
+patch_margin_top = 2
+patch_margin_right = 2
+patch_margin_bottom = 2
+script = ExtResource("2_l844g")
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1

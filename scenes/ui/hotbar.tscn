@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://2lb2i02r8vct"]
 
 [ext_resource type="Texture2D" uid="uid://da777w8wclyx2" path="res://assets/textures/ui_outline.png" id="1_gtso2"]
-[ext_resource type="Script" path="res://scripts/inventory/hotbar.gd" id="2_w1x2i"]
+[ext_resource type="Script" path="res://scripts/player/inventory/hotbar.gd" id="2_d23ro"]
 [ext_resource type="Shader" path="res://assets/shaders/panel.gdshader" id="3_parrt"]
 [ext_resource type="PackedScene" uid="uid://dt5hyejmfkt2u" path="res://scenes/ui/slot.tscn" id="4_trf3p"]
 [ext_resource type="Texture2D" uid="uid://bry0jeuqx8qwu" path="res://assets/textures/ui_fill.png" id="5_x20aa"]
@@ -16,12 +16,11 @@ custom_minimum_size = Vector2(560, 70)
 size_flags_horizontal = 4
 size_flags_vertical = 8
 texture = ExtResource("1_gtso2")
-region_rect = Rect2(0, 0, 7, 7)
-patch_margin_left = 3
-patch_margin_top = 3
-patch_margin_right = 3
-patch_margin_bottom = 3
-script = ExtResource("2_w1x2i")
+patch_margin_left = 2
+patch_margin_top = 2
+patch_margin_right = 2
+patch_margin_bottom = 2
+script = ExtResource("2_d23ro")
 
 [node name="Panel Effect" type="ColorRect" parent="."]
 z_index = -2
