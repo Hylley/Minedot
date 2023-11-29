@@ -7,6 +7,7 @@ class_name Player
 @onready var cube_highlight := $CubeHighlight
 @onready var inventory := $Inventory
 var player_mode := 0
+var current_state = null
 
 # Movement ———————————————————————————————————
 var speed : float
@@ -34,6 +35,9 @@ func _ready() -> void:
 	raycast.add_exception(self)
 	if player_mode == 3: get_node('CollisionShape3D').disabled = true
 
+	var current_slot = inventory.hotbar.get_slot(0).get_entry()
+	if current_slot[Inventory.state]:
+		current_state = current_slot[Inventory.state]
 
 func _unhandled_input(event : InputEvent) -> void:
 	if event is InputEventMouseMotion and not World.paused and active:
@@ -49,6 +53,20 @@ func _input(_event : InputEvent) -> void:
 
 	if World.paused or not active: return
 
+	if Input.is_action_pressed('hotbar_right'):
+		var new_entry = inventory.hotbar.hotbar_change(1)
+		if new_entry == null or not Inventory.state in new_entry:
+			current_state= null
+		else:
+			current_state = new_entry[Inventory.state]
+
+	if Input.is_action_pressed('hotbar_left'):
+		var new_entry = inventory.hotbar.hotbar_change(-1)
+		if new_entry == null or not Inventory.state in new_entry:
+			current_state= null
+		else:
+			current_state = new_entry[Inventory.state]
+
 	quick_zoom = Input.is_action_pressed('quick_zoom') and not Input.is_action_just_released('quick_zoom')
 
 
@@ -58,13 +76,14 @@ func _physics_process(delta : float) -> void:
 	handle_movement(delta)
 	handle_interaction(delta)
 
+
 func handle_movement(delta : float) -> void:
 	if player_mode == 0:
 		if not is_on_floor(): velocity.y -= gravity * delta
-		if Input.is_action_pressed("jump") and is_on_floor(): velocity.y = JUMP_VELOCITY
+		if active and Input.is_action_pressed("jump") and is_on_floor(): velocity.y = JUMP_VELOCITY
 	elif player_mode == 3:
-		if    Input.is_action_pressed("jump"):   velocity.y =  gravity * delta * 10
-		elif  Input.is_action_pressed("crouch"): velocity.y = -gravity * delta * 10
+		if   active and Input.is_action_pressed("jump")  : velocity.y =  gravity * delta * 10
+		elif active and Input.is_action_pressed("crouch"): velocity.y = -gravity * delta * 10
 		else: velocity.y = 0
 
 	if Input.is_action_pressed("sprint"):
@@ -121,12 +140,14 @@ func handle_interaction(_delta : float) -> void:
 			Fragment.WORLD.delete(raycast.get_collider().global_position, focusing)
 
 		if Input.is_action_just_pressed('interact'):
+			if current_state == null: return
+
 			var insert_position := Vector3i(focusing + norma)
 
 			if insert_position == Vector3i(floor(global_position)) or \
 			   insert_position == Vector3i(floor(global_position)) + Vector3i(0, 1, 0):
 				return
 
-			Fragment.WORLD.insert(raycast.get_collider().global_position, insert_position, Placeable.state.grass)
+			Fragment.WORLD.insert(raycast.get_collider().global_position, insert_position, current_state)
 		return
 	cube_highlight.visible = false

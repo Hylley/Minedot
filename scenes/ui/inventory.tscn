@@ -1,17 +1,12 @@
-[gd_scene load_steps=8 format=3 uid="uid://ckgboufqdfufk"]
+[gd_scene load_steps=7 format=3 uid="uid://ckgboufqdfufk"]
 
 [ext_resource type="Texture2D" uid="uid://bry0jeuqx8qwu" path="res://assets/textures/ui_fill.png" id="1_0rs4a"]
 [ext_resource type="Script" path="res://scripts/inventory/inventory.gd" id="1_mviag"]
-[ext_resource type="Texture2D" uid="uid://da777w8wclyx2" path="res://assets/textures/ui_outline.png" id="1_to43e"]
 [ext_resource type="Shader" path="res://assets/shaders/panel.gdshader" id="2_ebl7e"]
 [ext_resource type="PackedScene" uid="uid://dt5hyejmfkt2u" path="res://scenes/ui/slot.tscn" id="3_00r8y"]
+[ext_resource type="PackedScene" uid="uid://2lb2i02r8vct" path="res://scenes/ui/hotbar.tscn" id="5_cc71y"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_mrdd1"]
-shader = ExtResource("2_ebl7e")
-shader_parameter/blur = 2.0
-shader_parameter/grain = 0.03
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_gpmxd"]
 shader = ExtResource("2_ebl7e")
 shader_parameter/blur = 2.0
 shader_parameter/grain = 0.03
@@ -260,78 +255,6 @@ layout_mode = 2
 [node name="Inventory Slot 24" parent="Control/MarginContainer/VSplitContainer/Inventory/NinePatchRect/Panel Effect/MarginContainer/VSplitContainer/Slots" instance=ExtResource("3_00r8y")]
 layout_mode = 2
 
-[node name="Hotbar" type="NinePatchRect" parent="Control/MarginContainer/VSplitContainer"]
+[node name="Hotbar" parent="Control/MarginContainer/VSplitContainer" instance=ExtResource("5_cc71y")]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 70)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-texture = ExtResource("1_to43e")
-region_rect = Rect2(0, 0, 7, 7)
-patch_margin_left = 3
-patch_margin_top = 3
-patch_margin_right = 3
-patch_margin_bottom = 3
-
-[node name="Panel Effect" type="ColorRect" parent="Control/MarginContainer/VSplitContainer/Hotbar"]
-z_index = -2
-material = SubResource("ShaderMaterial_gpmxd")
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="GridContainer" type="GridContainer" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect"]
-layout_direction = 2
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 8
-size_flags_stretch_ratio = 0.0
-theme_override_constants/h_separation = 0
-columns = 8
-
-[node name="Hotbar Slot 1" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 2" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 3" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 4" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 5" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 6" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 7" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
-layout_mode = 2
-
-[node name="Hotbar Slot 8" parent="Control/MarginContainer/VSplitContainer/Hotbar/Panel Effect/GridContainer" instance=ExtResource("3_00r8y")]
-self_modulate = Color(1, 1, 1, 0)
-custom_minimum_size = Vector2(70, 70)
 layout_mode = 2

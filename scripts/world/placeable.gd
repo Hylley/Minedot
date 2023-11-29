@@ -1,11 +1,19 @@
-extends Node
 class_name Placeable
 
-const MATERIAL := preload("res://assets/textures/standard_material_3d.tres")
+const MATERIAL := preload("res://assets/textures/texture_atlas.tres")
 static var TEXTURE_SIZE := Vector2i(MATERIAL.albedo_texture.get_width(), MATERIAL.albedo_texture.get_height())
 static var TILE_SIZE = 16
 @warning_ignore('integer_division')
 static var RELATIVE_ATLAS_SIZE := Vector2i(TEXTURE_SIZE.x / TILE_SIZE, TEXTURE_SIZE.y / TILE_SIZE)
+
+
+static func get_state_texture2d(_offset : Vector2i) -> Texture2D:
+	var atlas_texture = AtlasTexture.new()
+	atlas_texture.set_atlas(Placeable.MATERIAL.albedo_texture)
+	atlas_texture.set_region(Rect2(_offset.x * Placeable.TILE_SIZE, _offset.y * Placeable.TILE_SIZE, Placeable.TILE_SIZE, Placeable.TILE_SIZE))
+
+	return atlas_texture
+
 
 # Keys —————————————————————————
 

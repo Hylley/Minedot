@@ -1,0 +1,103 @@
+[gd_scene load_steps=7 format=3 uid="uid://2lb2i02r8vct"]
+
+[ext_resource type="Texture2D" uid="uid://da777w8wclyx2" path="res://assets/textures/ui_outline.png" id="1_gtso2"]
+[ext_resource type="Script" path="res://scripts/inventory/hotbar.gd" id="2_w1x2i"]
+[ext_resource type="Shader" path="res://assets/shaders/panel.gdshader" id="3_parrt"]
+[ext_resource type="PackedScene" uid="uid://dt5hyejmfkt2u" path="res://scenes/ui/slot.tscn" id="4_trf3p"]
+[ext_resource type="Texture2D" uid="uid://bry0jeuqx8qwu" path="res://assets/textures/ui_fill.png" id="5_x20aa"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_gpmxd"]
+shader = ExtResource("3_parrt")
+shader_parameter/blur = 2.0
+shader_parameter/grain = 0.03
+
+[node name="Hotbar" type="NinePatchRect"]
+custom_minimum_size = Vector2(560, 70)
+size_flags_horizontal = 4
+size_flags_vertical = 8
+texture = ExtResource("1_gtso2")
+region_rect = Rect2(0, 0, 7, 7)
+patch_margin_left = 3
+patch_margin_top = 3
+patch_margin_right = 3
+patch_margin_bottom = 3
+script = ExtResource("2_w1x2i")
+
+[node name="Panel Effect" type="ColorRect" parent="."]
+z_index = -2
+material = SubResource("ShaderMaterial_gpmxd")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GridContainer" type="GridContainer" parent="Panel Effect"]
+layout_direction = 2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 8
+size_flags_stretch_ratio = 0.0
+theme_override_constants/h_separation = 0
+columns = 8
+
+[node name="Hotbar Slot 1" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 2" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 3" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 4" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 5" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 6" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 7" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
+
+[node name="Hotbar Slot 8" parent="Panel Effect/GridContainer" instance=ExtResource("4_trf3p")]
+unique_name_in_owner = true
+self_modulate = Color(1, 1, 1, 0)
+custom_minimum_size = Vector2(70, 70)
+layout_mode = 2
+texture = ExtResource("5_x20aa")
