@@ -4,7 +4,7 @@ static var MATERIAL := StandardMaterial3D.new()
 static var TEXTURE_SIZE : Vector2i
 static var TILE_SIZE : int
 @warning_ignore('integer_division')
-static var RELATIVE_ATLAS_SIZE := Vector2i(TEXTURE_SIZE.x / TILE_SIZE, TEXTURE_SIZE.y / TILE_SIZE)
+static var RELATIVE_ATLAS_SIZE
 
 static var module : Dictionary
 
@@ -26,11 +26,17 @@ func add_resource(path : String) -> void:
 	MATERIAL.set_texture(BaseMaterial3D.TEXTURE_ALBEDO, texture)
 	TEXTURE_SIZE = Vector2i(MATERIAL.albedo_texture.get_width(), MATERIAL.albedo_texture.get_height())
 	TILE_SIZE = module.placeable_tile_size
+	RELATIVE_ATLAS_SIZE = Vector2i(TEXTURE_SIZE.x / TILE_SIZE, TEXTURE_SIZE.y / TILE_SIZE)
 
 
 func state(i : int) -> Dictionary:
 	return module.states[module.states.keys()[i]]
 
+
+func get_state_index(obj : Dictionary) -> int:
+	for i in range(module.state.size()):
+		if module.state[i] == obj: return i
+	return -1
 
 func get_file_from_zip(path, file):
 	var reader := ZIPReader.new()

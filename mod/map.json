@@ -18,6 +18,7 @@
 			"full_title": "Grass block",
 			"is_transparent": false,
 			"index_in_inventory": true,
+			"is_stackable": true,
 
 			"textures":
 			{
@@ -44,6 +45,7 @@
 			"full_title": "Dirt block",
 			"is_transparent": false,
 			"index_in_inventory": true,
+			"is_stackable": true,
 
 			"textures":
 			{
@@ -70,6 +72,7 @@
 			"full_title": "Stone block",
 			"is_transparent": false,
 			"index_in_inventory": true,
+			"is_stackable": true,
 
 			"textures":
 			{
@@ -96,6 +99,7 @@
 			"full_title": "Glass block",
 			"is_transparent": true,
 			"index_in_inventory": true,
+			"is_stackable": true,
 
 			"textures":
 			{
