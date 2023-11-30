@@ -2,15 +2,38 @@ extends Node3D
 class_name Fragment
 
 # Variables ———————————————————————————————————
+
 static var SIZE  : Vector3i
 static var WORLD : World
 var cubes := []
 var rendered : bool
 
 # Rendering variables —————————————————————————
+
 var mesh : ArrayMesh
 var surface : SurfaceTool
 var mesh_instance : MeshInstance3D
+
+# Constants  ——————————————————————————————————
+
+const VERTICES := \
+[
+	Vector3i(0, 0, 0),
+	Vector3i(1, 0, 0),
+	Vector3i(0, 1, 0),
+	Vector3i(1, 1, 0),
+	Vector3i(0, 0, 1),
+	Vector3i(1, 0, 1),
+	Vector3i(0, 1, 1),
+	Vector3i(1, 1, 1)
+]
+
+const TOP_FACE    := [2, 3, 7, 6]
+const BOTTOM_FACE := [0, 4, 5, 1]
+const LEFT_FACE   := [6, 4, 0, 2]
+const RIGHT_FACE  := [3, 1, 5, 7]
+const FRONT_FACE  := [7, 5, 4, 6]
+const BACK_FACE   := [2, 0, 1, 3]
 
 # Rendering methods ————————————————————————————
 
@@ -34,7 +57,7 @@ func render(world_position : Vector3i, parent : Node3D = null) -> void:
 				render_cube(cubes[x][y][z], Vector3i(x, y, z), world_position)
 
 	surface.generate_normals(false)
-	surface.set_material(Placeable.MATERIAL)
+	surface.set_material(Resources.MATERIAL)
 	surface.commit(mesh)
 	mesh_instance.set_mesh(mesh)
 	add_child(mesh_instance)
@@ -59,8 +82,9 @@ func refresh(world_position : Vector3i) -> void:
 	self.render(world_position)
 
 
-func render_cube(cube : Placeable.state, relative_position : Vector3i, world_position : Vector3i) -> void:
-	if cube == null or cube == Placeable.state.air: return
+func render_cube(state_index : int, relative_position : Vector3i, world_position : Vector3i) -> void:
+	var state := Resources.state(state_index)
+	if state == Resources.module.air: return
 
 	var top_cube := relative_position + Vector3i(0, 1, 0)
 	var bot_cube := relative_position - Vector3i(0, 1, 0)
@@ -70,35 +94,35 @@ func render_cube(cube : Placeable.state, relative_position : Vector3i, world_pos
 	var bak_cube := relative_position - Vector3i(0, 0, 1)
 
 	if Fragment.is_transparent(get_state(top_cube, world_position)):
-		create_face(Placeable.TOP_FACE, relative_position,
-					Placeable.MAP[cube][Placeable.top_texture], Placeable.MAP[cube][Placeable.rotate_uv_y])
+		create_face(TOP_FACE, relative_position,
+					state.textures.upper_texture, state.rotation_rules.upper_texture)
 	if Fragment.is_transparent(get_state(bot_cube, world_position)):
-		create_face(Placeable.BOTTOM_FACE, relative_position,
-					Placeable.MAP[cube][Placeable.bottom_texture], Placeable.MAP[cube][Placeable.rotate_uv_y])
+		create_face(BOTTOM_FACE, relative_position,
+					state.textures.lower_texture, state.rotation_rules.lower_texture)
 
 	if Fragment.is_transparent(get_state(rig_cube, world_position)):
-		create_face(Placeable.RIGHT_FACE, relative_position,
-					Placeable.MAP[cube][Placeable.right_texture], Placeable.MAP[cube][Placeable.rotate_uv_x])
+		create_face(RIGHT_FACE, relative_position,
+					state.textures.right_texture, state.rotation_rules.right_texture)
 	if Fragment.is_transparent(get_state(lef_cube, world_position)):
-		create_face(Placeable.LEFT_FACE, relative_position,
-					Placeable.MAP[cube][Placeable.left_texture], Placeable.MAP[cube][Placeable.rotate_uv_x])
+		create_face(LEFT_FACE, relative_position,
+					state.textures.left_texture, state.rotation_rules.left_texture)
 
 	if Fragment.is_transparent(get_state(frn_cube, world_position)):
-		create_face(Placeable.FRONT_FACE, relative_position,
-					Placeable.MAP[cube][Placeable.front_texture], Placeable.MAP[cube][Placeable.rotate_uv_z])
+		create_face(FRONT_FACE, relative_position,
+					state.textures.front_texture, state.rotation_rules.front_texture)
 	if Fragment.is_transparent(get_state(bak_cube, world_position)):
-		create_face(Placeable.BACK_FACE, relative_position,
-					Placeable.MAP[cube][Placeable.back_texture], Placeable.MAP[cube][Placeable.rotate_uv_z])
+		create_face(BACK_FACE, relative_position,
+					state.textures.back_texture, state.rotation_rules.back_texture)
 
 
 func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool) -> void:
-	var a : Vector3i = Placeable.VERTICES[respective_vertices[0]] + relative_position
-	var b : Vector3i = Placeable.VERTICES[respective_vertices[1]] + relative_position
-	var c : Vector3i = Placeable.VERTICES[respective_vertices[2]] + relative_position
-	var d : Vector3i = Placeable.VERTICES[respective_vertices[3]] + relative_position
+	var a : Vector3i = VERTICES[respective_vertices[0]] + relative_position
+	var b : Vector3i = VERTICES[respective_vertices[1]] + relative_position
+	var c : Vector3i = VERTICES[respective_vertices[2]] + relative_position
+	var d : Vector3i = VERTICES[respective_vertices[3]] + relative_position
 
-	var size := Vector2(1.0 / Placeable.RELATIVE_ATLAS_SIZE.x, 1.0 / Placeable.RELATIVE_ATLAS_SIZE.y)
-	var offset := Vector2(texture_position) / Vector2(Placeable.RELATIVE_ATLAS_SIZE)
+	var size := Vector2(1.0 / Resources.RELATIVE_ATLAS_SIZE.x, 1.0 / Resources.RELATIVE_ATLAS_SIZE.y)
+	var offset := Vector2(texture_position) / Vector2(Resources.RELATIVE_ATLAS_SIZE)
 	var uv := [
 		offset + Vector2(0, 0),
 		offset + Vector2(0, size.y),
@@ -111,13 +135,13 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 	surface.add_triangle_fan(([a, c, d]), ([uv[0], uv[2], uv[3]]))
 
 
-func get_state(relative_position : Vector3i, world_position : Vector3i) -> Placeable.state:
+func get_state(relative_position : Vector3i, world_position : Vector3i) -> int:
 	if Fragment.is_out_of_bounds(relative_position):
 		return Fragment.WORLD.get_state_global(Vector3(world_position + relative_position))
 	return cubes[relative_position.x][relative_position.y][relative_position.z]
 
 
-func set_state(relative_position : Vector3i, world_position : Vector3i, new_state : Placeable.state) -> void:
+func set_state(relative_position : Vector3i, world_position : Vector3i, new_state : int) -> void:
 	cubes[relative_position.x][relative_position.y][relative_position.z] = new_state
 	render(world_position)
 
@@ -129,8 +153,8 @@ static func is_out_of_bounds(relative_position : Vector3i) -> bool:
 	   relative_position.z < 0 or relative_position.z >= Fragment.SIZE.z
 
 
-static func is_transparent(cube : Placeable.state) -> bool:
-	return Placeable.MAP[cube][Placeable.is_transparent]
+static func is_transparent(state_index : int) -> bool:
+	return Resources.state(state_index).is_transparent
 
 
 static func rotate_uv(default_uv_array : Array, cube_world_position : Vector3i) -> Array:
@@ -143,48 +167,3 @@ static func rotate_uv(default_uv_array : Array, cube_world_position : Vector3i) 
 	if pivot % 2 == 0: rotated_uvs.reverse()
 
 	return rotated_uvs
-
-
-static func join_duplicates(_mesh : Mesh) -> ArrayMesh:
-	var data_tool := MeshDataTool.new()
-	if not data_tool.create_from_surface(_mesh, 0) == OK:
-		return
-
-	var old_vertex_ids := {}
-	var ordered_vertices := []
-	for vertex_id in data_tool.get_vertex_count():
-		var vertex := data_tool.get_vertex(vertex_id)
-		old_vertex_ids[vertex] = vertex_id
-		ordered_vertices.append(vertex)
-	ordered_vertices.sort()
-
-	var surface_tool := SurfaceTool.new()
-	surface_tool.begin(Mesh.PRIMITIVE_TRIANGLES)
-	surface_tool.index()
-
-	var vertex_ids := {}
-	var original_face_ids := {}
-	var current_id := 0
-	var last_vertex : Vector3 = ordered_vertices.front()
-	var id : int = old_vertex_ids[ordered_vertices.front()]
-	surface_tool.set_color(Color(id))
-	surface_tool.add_vertex(last_vertex)
-
-	for vertex in ordered_vertices:
-		if not last_vertex.is_equal_approx(vertex):
-			id = old_vertex_ids[vertex]
-			surface_tool.set_color(Color(id))
-			surface_tool.add_vertex(vertex)
-			current_id += 1
-			last_vertex = vertex
-		vertex_ids[vertex] = current_id
-
-	var last_face_id := 0
-	for vertex_id in data_tool.get_vertex_count():
-		var vertex := data_tool.get_vertex(vertex_id)
-		if vertex_id % 3 == 0:
-			original_face_ids[last_face_id] = data_tool.get_vertex_faces(vertex_id)[0]
-			last_face_id += 1
-		surface_tool.add_index(vertex_ids[vertex])
-
-	return surface_tool.commit()

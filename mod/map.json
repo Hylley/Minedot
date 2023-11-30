@@ -1,0 +1,125 @@
+{
+	"module": "minedot",
+	"thumbnail": "../thumbnail.png",
+
+	"placeable_atlas": "placeable_atlas.png", "placeable_tile_size": 16,
+	"artifacts_atlas": "artifacts_atlas.png", "artifacts_tile_size": 16,
+	
+	"states":
+	{
+		"air":
+		{
+			"is_transparent": true,
+			"index_in_inventory": false
+		},
+
+		"grass":
+		{
+			"full_title": "Grass block",
+			"is_transparent": false,
+			"index_in_inventory": true,
+
+			"textures":
+			{
+				"upper_texture": [0, 0], "lower_texture": [2, 0],
+				"left_texture" : [1, 0], "right_texture": [1, 0],
+				"front_texture": [1, 0], "back_texture" : [1, 0]
+			},
+			"rotation_rules":
+			{
+				"upper_texture": true,  "lower_texture": true,
+				"left_texture" : false, "right_texture": false,
+				"front_texture": false, "back_texture" : false
+			},
+			"sound_feedback":
+			{
+				"append": "", "remove": "",
+				"walk_on": "", "fall_off": ""
+			},
+			"action_trigger_module": ""
+		},
+		
+		"dirt":
+		{
+			"full_title": "Dirt block",
+			"is_transparent": false,
+			"index_in_inventory": true,
+
+			"textures":
+			{
+				"upper_texture": [2, 0], "lower_texture": [2, 0],
+				"left_texture" : [2, 0], "right_texture": [2, 0],
+				"front_texture": [2, 0], "back_texture" : [2, 0]
+			},
+			"rotation_rules":
+			{
+				"upper_texture": true,  "lower_texture": true,
+				"left_texture" : true, "right_texture" : true,
+				"front_texture": true, "back_texture"  : true
+			},
+			"sound_feedback":
+			{
+				"append": "", "remove": "",
+				"walk_on": "", "fall_off": ""
+			},
+			"action_trigger_module": ""
+		},
+
+		"stone":
+		{
+			"full_title": "Stone block",
+			"is_transparent": false,
+			"index_in_inventory": true,
+
+			"textures":
+			{
+				"upper_texture": [0, 1], "lower_texture": [0, 1],
+				"left_texture" : [0, 1], "right_texture": [0, 1],
+				"front_texture": [0, 1], "back_texture" : [0, 1]
+			},
+			"rotation_rules":
+			{
+				"upper_texture": true,  "lower_texture": true,
+				"left_texture" : true, "right_texture" : true,
+				"front_texture": true, "back_texture"  : true
+			},
+			"sound_feedback":
+			{
+				"append": "", "remove": "",
+				"walk_on": "", "fall_off": ""
+			},
+			"action_trigger_module": ""
+		},
+
+		"glass":
+		{
+			"full_title": "Glass block",
+			"is_transparent": true,
+			"index_in_inventory": true,
+
+			"textures":
+			{
+				"upper_texture": [1, 1], "lower_texture": [1, 1],
+				"left_texture" : [1, 1], "right_texture": [1, 1],
+				"front_texture": [1, 1], "back_texture" : [1, 1]
+			},
+			"rotation_rules":
+			{
+				"upper_texture": false,  "lower_texture": false,
+				"left_texture" : false, "right_texture" : false,
+				"front_texture": false, "back_texture"  : false
+			},
+			"sound_feedback":
+			{
+				"append": "", "remove": "",
+				"walk_on": "", "fall_off": ""
+			},
+			"action_trigger_module": ""
+		}
+	},
+
+	"artifacts":
+	{
+
+	}
+}

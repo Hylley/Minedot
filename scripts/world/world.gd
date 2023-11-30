@@ -2,11 +2,13 @@ extends Node3D
 class_name World
 
 # Variables ———————————————————————————————————
+
 var initialized : bool
 var active : bool = true
 static var paused : bool
 
 # Rendering ———————————————————————————————————
+
 var gen_thread : Thread
 var active_fragments := {}
 static var random := RandomNumberGenerator.new()
