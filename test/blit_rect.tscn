@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://2tlh0ga3c7jk"]
+
+[ext_resource type="Script" path="res://test/Sprite2D.gd" id="1_0va1l"]
+
+[node name="blit_rect" type="Node2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(60, 60)
+scale = Vector2(10, 10)
+script = ExtResource("1_0va1l")

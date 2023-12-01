@@ -6,10 +6,10 @@ class_name Inventory
 
 
 func _ready() -> void:
-	hotbar.get_slot(0).define(0, 1)
-	hotbar.get_slot(1).define(1, 1)
-	hotbar.get_slot(2).define(2, 1)
-	hotbar.get_slot(3).define(3, 1)
+	hotbar.get_slot(0).define(1, Slot.type.placeable, 1)
+	hotbar.get_slot(1).define(2, Slot.type.placeable, 1)
+	hotbar.get_slot(2).define(3, Slot.type.placeable, 1)
+	hotbar.get_slot(3).define(4, Slot.type.placeable, 1)
 
 
 func toggle_window() -> void:
