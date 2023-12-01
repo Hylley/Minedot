@@ -17,3 +17,4 @@ mono_crash.*.json
 # Project specific
 *.psd
 build/
+mods/
