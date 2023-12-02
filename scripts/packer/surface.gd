@@ -2,13 +2,13 @@ extends Node
 class_name Surface
 
 static var MATERIAL := StandardMaterial3D.new()
-static var TEXTURE_ATLAS
-
+static var indexer := [] # List of pointers to all placeables dicts in the game
 static var TILE_SIZE := 0
 static var ATLAS_SIZE : Vector2i
 static var ATLAS_SIZE_RELATIVE : Vector2i
 
-static var indexer := [] # List of pointers to all placeables dicts in the game
+# Settings
+const ATLAS_FORMAT = Image.FORMAT_RGBA8
 
 func _init() -> void: # Init is always called before on_ready
 
@@ -64,7 +64,7 @@ func generate_atlas() -> Texture2D:
 
 		iteration += 1
 
-	var full_image = Image.create(full_image_size.x * TILE_SIZE, full_image_size.y * TILE_SIZE, false, Image.FORMAT_RGB8)
+	var full_image = Image.create(full_image_size.x * TILE_SIZE, full_image_size.y * TILE_SIZE, false, ATLAS_FORMAT)
 
 	for position in positioned_textures:
 		var texture_path  : String = positioned_textures[position].path
@@ -72,8 +72,10 @@ func generate_atlas() -> Texture2D:
 
 		var tile := Image.new()
 		tile.load_png_from_buffer(Packer.unzip(texture_orgin, 'assets/state/' + texture_path))
+		tile.convert(ATLAS_FORMAT)
 
 		full_image.blit_rect(tile, tile.get_used_rect(), position * TILE_SIZE)
+
 
 	return ImageTexture.create_from_image(full_image)
 

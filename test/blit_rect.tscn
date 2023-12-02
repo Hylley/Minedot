@@ -6,6 +6,6 @@
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(120, 240)
+position = Vector2(639, 390)
 scale = Vector2(10, 10)
 script = ExtResource("1_0va1l")
