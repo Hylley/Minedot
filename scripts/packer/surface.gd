@@ -13,7 +13,6 @@ var indexer := [air] # List of pointers to all placeables in the game
 
 var MATERIAL := StandardMaterial3D.new()
 var TILE_SIZE := 0
-var ATLAS_SIZE : Vector2i
 var ATLAS_SIZE_RELATIVE : Vector2i
 
 # Settings
@@ -89,6 +88,8 @@ func update_atlas() -> Texture2D:
 
 
 	texture_atlas = ImageTexture.create_from_image(full_image)
+	@warning_ignore('integer_division')
+	ATLAS_SIZE_RELATIVE =  Vector2i(texture_atlas.get_width() / TILE_SIZE, texture_atlas.get_height() / TILE_SIZE)
 	return texture_atlas
 
 

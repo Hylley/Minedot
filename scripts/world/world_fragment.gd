@@ -95,24 +95,24 @@ func render_cube(state_index : int, relative_position : Vector3i, world_position
 
 	if Fragment.is_transparent(get_state(top_cube, world_position)):
 		create_face(TOP_FACE, relative_position,
-					state.textures.upper_texture, state.rotation_rules.upper_texture)
+					state.textures.upper_texture, state.rotate_uv.upper_texture)
 	if Fragment.is_transparent(get_state(bot_cube, world_position)):
 		create_face(BOTTOM_FACE, relative_position,
-					state.textures.lower_texture, state.rotation_rules.lower_texture)
+					state.textures.lower_texture, state.rotate_uv.lower_texture)
 
 	if Fragment.is_transparent(get_state(rig_cube, world_position)):
 		create_face(RIGHT_FACE, relative_position,
-					state.textures.right_texture, state.rotation_rules.right_texture)
+					state.textures.right_texture, state.rotate_uv.right_texture)
 	if Fragment.is_transparent(get_state(lef_cube, world_position)):
 		create_face(LEFT_FACE, relative_position,
-					state.textures.left_texture, state.rotation_rules.left_texture)
+					state.textures.left_texture, state.rotate_uv.left_texture)
 
 	if Fragment.is_transparent(get_state(frn_cube, world_position)):
 		create_face(FRONT_FACE, relative_position,
-					state.textures.front_texture, state.rotation_rules.front_texture)
+					state.textures.front_texture, state.rotate_uv.front_texture)
 	if Fragment.is_transparent(get_state(bak_cube, world_position)):
 		create_face(BACK_FACE, relative_position,
-					state.textures.back_texture, state.rotation_rules.back_texture)
+					state.textures.back_texture, state.rotate_uv.back_texture)
 
 
 func create_face(respective_vertices : Array, relative_position : Vector3i, texture_position : Vector2i, rotate_texture : bool) -> void:
