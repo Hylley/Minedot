@@ -2,31 +2,32 @@
 extends NinePatchRect
 class_name Slot
 
+enum type
+{
+	placeable,
+	artifact
+}
+
 @onready var icon_placeholder  := %Icon
 @onready var count_label := %Count
 var entry : int = -1
 
-func define(_entry, count) -> void:
-	if _entry < 0 or _entry >= Inventory.entries.size():
-		push_error('Invalid inventory entry: ' + str(_entry) + ';')
+func define(_entry : int, _type : type, count : int) -> void:
+	if _type == type.placeable:
+		var state : Dictionary = PackerSurface.indexer[_entry]
+		if not state.is_indexable:
+			push_warning('Trying to index an indexable item in inventory: ' + Packer.indexer[_entry].name)
+			return
 
-	entry = _entry
+		if state.is_stackable: set_count(count)
 
-	var item_name : String = Inventory.keys[entry]
-	var item_details : Dictionary = Inventory.entries[item_name]
-
-	if item_details[Inventory.is_stackable]:
-		set_count(count)
-
-	if Inventory.state in item_details:
-		set_icon(Placeable.get_state_texture2d(Placeable.MAP[item_details[Inventory.state]][Placeable.top_texture]))
-
-	return
+		# set_icon(Resources.get_state_texture2d(state.textures.upper_texture))
+	elif _type == type.artifact: pass
 
 func get_entry():
-	if entry >= 0:
-		return Inventory.entries[Inventory.keys[entry]]
+	if entry >= 0: return entry
 	else: return null
+
 func set_icon(new_texture : Texture2D) -> void: icon_placeholder.set_texture(new_texture)
 func set_count(new_count : int) -> void: count_label.set_text(str(new_count))
 func show_frame() -> void: self.set_self_modulate(Color(Color.WHITE, 1))

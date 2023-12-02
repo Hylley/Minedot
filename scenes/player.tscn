@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://bhyvgfmd4flsd"]
+[gd_scene load_steps=6 format=3 uid="uid://bhyvgfmd4flsd"]
 
 [ext_resource type="Script" path="res://scripts/player/player.gd" id="1_gxyfe"]
 [ext_resource type="Material" uid="uid://jgea8uoathid" path="res://assets/textures/cube_highlight.tres" id="2_vjyu1"]
-[ext_resource type="PackedScene" uid="uid://ckgboufqdfufk" path="res://scenes/ui/inventory.tscn" id="3_1boj5"]
 [ext_resource type="Texture2D" uid="uid://dlf6gatdh4s6x" path="res://assets/textures/ui_crosshair.png" id="4_dqibr"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gq0l5"]
@@ -37,8 +36,6 @@ cast_shadow = 0
 ignore_occlusion_culling = true
 gi_mode = 0
 mesh = SubResource("BoxMesh_lr3br")
-
-[node name="Inventory" parent="." instance=ExtResource("3_1boj5")]
 
 [node name="Crosshair" type="CanvasLayer" parent="."]
 

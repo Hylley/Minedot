@@ -27,4 +27,3 @@ func hotbar_change(amount : int):
 		selected_slot = selected_slot + amount
 
 	get_slot(selected_slot).show_frame()
-	return get_slot(selected_slot).get_entry()

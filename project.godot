@@ -22,6 +22,8 @@ boot_splash/minimum_display_time=5000
 [autoload]
 
 UserPreferences="*res://scripts/preferences.gd"
+Packer="*res://scripts/packer/packer.gd"
+PackerSurface="*res://scripts/packer/surface.gd"
 
 [display]
 

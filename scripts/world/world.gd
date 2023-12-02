@@ -2,11 +2,13 @@ extends Node3D
 class_name World
 
 # Variables ———————————————————————————————————
+
 var initialized : bool
 var active : bool = true
 static var paused : bool
 
 # Rendering ———————————————————————————————————
+
 var gen_thread : Thread
 var active_fragments := {}
 static var random := RandomNumberGenerator.new()
@@ -39,10 +41,10 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, _rules :
 	self.rules = _rules
 
 	if UserPreferences.get_preference('decoration', 'fade_border_fragments', false):
-		Placeable.MATERIAL.set_distance_fade(BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
+		PackerSurface.MATERIAL.set_distance_fade(BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
 		var fade_distance: int = Math.calc_fade_distance(fragment_size, CIRCULAR_RANGE) # Need some improvements
-		Placeable.MATERIAL.set_distance_fade_min_distance(fade_distance)
-		Placeable.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
+		PackerSurface.MATERIAL.set_distance_fade_min_distance(fade_distance)
+		PackerSurface.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
 
 	initialized = true
 	World.pause()
@@ -143,11 +145,11 @@ static func toggle_pause(): paused = !paused # This is my favourite
 # API methods —————————————————————————
 
 func delete(fragment_position : Vector3i, state_global_position : Vector3i) -> void:
-	insert(fragment_position, state_global_position, Placeable.state.air)
+	insert(fragment_position, state_global_position, PackerSurface.air.index)
 	# Particle logic here
 
 
-func insert(fragment_position : Vector3i, state_global_position : Vector3i, state : Placeable.state) -> void:
+func insert(fragment_position : Vector3i, state_global_position : Vector3i, state_index : int) -> void:
 	var relative_position := state_global_position - fragment_position
 
 	if Fragment.is_out_of_bounds(relative_position):
@@ -157,7 +159,7 @@ func insert(fragment_position : Vector3i, state_global_position : Vector3i, stat
 			return
 		relative_position = relative_position % Fragment.SIZE
 
-	active_fragments[fragment_position].set_state(relative_position, fragment_position, state)
+	active_fragments[fragment_position].set_state(relative_position, fragment_position, state_index)
 
 	if relative_position.x == 0:
 		refresh_fragment_if_exists(fragment_position - Vector3i(Fragment.SIZE.x, 0, 0))
@@ -175,12 +177,12 @@ func insert(fragment_position : Vector3i, state_global_position : Vector3i, stat
 		refresh_fragment_if_exists(fragment_position + Vector3i(0, 0, Fragment.SIZE.z))
 
 
-func get_state_global(world_position : Vector3) -> Placeable.state:
+func get_state_global(world_position : Vector3) -> int:
 	var snapped_position := World.snap_to_grid(world_position)
 
 	var fragment := get_fragment(snapped_position)
 	if fragment == null and TILE_HORIZONTAL:     return rules.call(world_position)
-	if fragment == null and not TILE_HORIZONTAL: return Placeable.state.air
+	if fragment == null and not TILE_HORIZONTAL: return PackerSurface.air.index
 
 	var local_position = Vector3i(world_position) - snapped_position
 	return fragment.get_state(local_position, snapped_position)
@@ -212,13 +214,13 @@ func get_spawn_point() -> Vector3:
 		for x in range(Fragment.SIZE.x):
 			for y in range(Fragment.SIZE.y - 1, -1, -1):
 				for z in range(Fragment.SIZE.z):
-					var state : Placeable.state = fragment_object.get_state(Vector3i(x, y, z), fragment_position)
-					var state_up : Placeable.state = fragment_object.get_state(Vector3i(x, y + 1, z), fragment_position)
-					var state_down : Placeable.state = fragment_object.get_state(Vector3i(x, y + 2, z), fragment_position)
+					var state : int = fragment_object.get_state(Vector3i(x, y, z), fragment_position)
+					var state_up : int = fragment_object.get_state(Vector3i(x, y + 1, z), fragment_position)
+					var state_down : int = fragment_object.get_state(Vector3i(x, y + 2, z), fragment_position)
 
-					if state == Placeable.state.air or \
-					   state_up != Placeable.state.air or \
-					   state_down != Placeable.state.air: continue
+					if PackerSurface.indexer[state] == PackerSurface.air or \
+					   PackerSurface.indexer[state_up] != PackerSurface.air or \
+					   PackerSurface.indexer[state_down] != PackerSurface.air: continue
 
 					return Vector3(fragment_position) + Vector3(x, y + 1, z)
 
@@ -254,16 +256,16 @@ static func generatrix(world_position : Vector3i, size : Vector3i, _rules : Call
 	return cubes
 
 
-static func superflat(world_position : Vector3i) -> Placeable.state:
+static func superflat(world_position : Vector3i) -> int:
 	var surface_boundary := 6
 
 	if world_position.y == surface_boundary:
-		return Placeable.state.grass
+		return 1
 
 	if world_position.y < sqrt(surface_boundary) * randf() * 2:
-		return Placeable.state.stone
+		return 3
 
 	if world_position.y < surface_boundary:
-		return Placeable.state.dirt
+		return 2
 
-	return Placeable.state.air
+	return 0
