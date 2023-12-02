@@ -7,8 +7,8 @@ signal new_module_loaded(module_body : Dictionary)
 
 
 func _ready() -> void:
-	load_module('res://minedot.packer')
-	load_module('res://end.packer')
+	load_module('res://minedot.dpack')
+
 
 func load_module(path) -> Dictionary:
 	var module = JSON.parse_string(Packer.unzip(path, 'map.json').get_string_from_utf8())
@@ -18,6 +18,7 @@ func load_module(path) -> Dictionary:
 	modules[title].path = path
 
 	new_module_loaded.emit(modules[title])
+
 	return modules[title]
 
 

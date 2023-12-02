@@ -1,18 +1,18 @@
 extends Node
 class_name Surface
 
-static var MATERIAL := StandardMaterial3D.new()
-static var indexer := [] # List of pointers to all placeables dicts in the game
-static var TILE_SIZE := 0
-static var ATLAS_SIZE : Vector2i
-static var ATLAS_SIZE_RELATIVE : Vector2i
+var MATERIAL := StandardMaterial3D.new()
+var indexer := [] # List of pointers to all placeables dicts in the game
+var TILE_SIZE := 0
+var ATLAS_SIZE : Vector2i
+var ATLAS_SIZE_RELATIVE : Vector2i
 
 # Settings
 const ATLAS_FORMAT = Image.FORMAT_RGBA8
 
 func _init() -> void: # Init is always called before on_ready
 
-	indexer.append({ # Air block must always be present, and must always be index 0
+	indexer.append({ # Air block must always be present, and must always be at index 0
 		'name'          : "Air block",
 		'index'			: 0,
 		'is_transparent': true,
@@ -30,6 +30,17 @@ func on_new_module_loaded(module_body : Dictionary) -> void:
 		module_body.state[state].index  = indexer.size()
 		module_body.state[state].origin = module_body.path
 		indexer.append(module_body.state[state])
+
+	update_material()
+
+
+func update_material() -> void:
+	MATERIAL.set_texture(BaseMaterial3D.TEXTURE_ALBEDO, generate_atlas())
+	MATERIAL.set_texture_filter(BaseMaterial3D.TEXTURE_FILTER_NEAREST)
+	MATERIAL.set_transparency(BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR)
+	MATERIAL.set_specular(0)
+	MATERIAL.set_feature(BaseMaterial3D.FEATURE_AMBIENT_OCCLUSION, true);
+	MATERIAL.set_ao_light_affect(1)
 
 
 func generate_atlas() -> Texture2D:
@@ -71,7 +82,7 @@ func generate_atlas() -> Texture2D:
 		var texture_orgin : String = positioned_textures[position].origin
 
 		var tile := Image.new()
-		tile.load_png_from_buffer(Packer.unzip(texture_orgin, 'assets/state/' + texture_path))
+		tile.load_png_from_buffer(Packer.unzip(texture_orgin, 'assets/' + texture_path))
 		tile.convert(ATLAS_FORMAT)
 
 		full_image.blit_rect(tile, tile.get_used_rect(), position * TILE_SIZE)
@@ -79,6 +90,7 @@ func generate_atlas() -> Texture2D:
 
 	return ImageTexture.create_from_image(full_image)
 
-func get_data_by_index(index : int) -> Dictionary:
+
+func get_state(index : int) -> Dictionary:
 	if index < 0 or index >= indexer.size(): return {}
 	return indexer[index]
