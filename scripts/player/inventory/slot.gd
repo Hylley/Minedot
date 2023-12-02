@@ -14,14 +14,14 @@ var entry : int = -1
 
 func define(_entry : int, _type : type, count : int) -> void:
 	if _type == type.placeable:
-		var state : Dictionary = Resources.state(_entry)
-		if not state.index_in_inventory:
-			push_warning('Trying to index an indexable item in inventory: ' + Resources.state(_entry).full_title)
+		var state : Dictionary = PackerSurface.indexer[_entry]
+		if not state.is_indexable:
+			push_warning('Trying to index an indexable item in inventory: ' + Packer.indexer[_entry].name)
 			return
 
 		if state.is_stackable: set_count(count)
 
-		set_icon(Resources.get_state_texture2d(state.textures.upper_texture))
+		# set_icon(Resources.get_state_texture2d(state.textures.upper_texture))
 	elif _type == type.artifact: pass
 
 func get_entry():

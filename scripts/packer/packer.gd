@@ -1,5 +1,5 @@
 extends Node
-class_name Packer
+class_name packer
 
 
 static var modules := {}
@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func load_module(path) -> Dictionary:
-	var module = JSON.parse_string(Packer.unzip(path, 'map.json').get_string_from_utf8())
+	var module = JSON.parse_string(packer.unzip(path, 'map.json').get_string_from_utf8())
 	var title = module.module
 
 	modules[title] = module

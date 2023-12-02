@@ -41,10 +41,10 @@ func initialize(fragment_size : Vector3i, tile_h : bool, tile_v : bool, _rules :
 	self.rules = _rules
 
 	if UserPreferences.get_preference('decoration', 'fade_border_fragments', false):
-		Resources.MATERIAL.set_distance_fade(BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
+		PackerSurface.MATERIAL.set_distance_fade(BaseMaterial3D.DISTANCE_FADE_PIXEL_DITHER)
 		var fade_distance: int = Math.calc_fade_distance(fragment_size, CIRCULAR_RANGE) # Need some improvements
-		Resources.MATERIAL.set_distance_fade_min_distance(fade_distance)
-		Resources.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
+		PackerSurface.MATERIAL.set_distance_fade_min_distance(fade_distance)
+		PackerSurface.MATERIAL.set_distance_fade_max_distance(fade_distance / 1.5)
 
 	initialized = true
 	World.pause()
@@ -145,7 +145,7 @@ static func toggle_pause(): paused = !paused # This is my favourite
 # API methods —————————————————————————
 
 func delete(fragment_position : Vector3i, state_global_position : Vector3i) -> void:
-	insert(fragment_position, state_global_position, Resources.module.state.air)
+	insert(fragment_position, state_global_position, PackerSurface.air.index)
 	# Particle logic here
 
 
@@ -182,7 +182,7 @@ func get_state_global(world_position : Vector3) -> int:
 
 	var fragment := get_fragment(snapped_position)
 	if fragment == null and TILE_HORIZONTAL:     return rules.call(world_position)
-	if fragment == null and not TILE_HORIZONTAL: return Resources.module.state.air
+	if fragment == null and not TILE_HORIZONTAL: return PackerSurface.air.index
 
 	var local_position = Vector3i(world_position) - snapped_position
 	return fragment.get_state(local_position, snapped_position)
@@ -218,9 +218,9 @@ func get_spawn_point() -> Vector3:
 					var state_up : int = fragment_object.get_state(Vector3i(x, y + 1, z), fragment_position)
 					var state_down : int = fragment_object.get_state(Vector3i(x, y + 2, z), fragment_position)
 
-					if Resources.module.state[state] == Resources.module.state.air or \
-					   Resources.module.state[state_up] != Resources.module.state.air or \
-					   Resources.module.state[state_down] != Resources.module.state.air: continue
+					if PackerSurface.indexer[state] == PackerSurface.air or \
+					   PackerSurface.indexer[state_up] != PackerSurface.air or \
+					   PackerSurface.indexer[state_down] != PackerSurface.air: continue
 
 					return Vector3(fragment_position) + Vector3(x, y + 1, z)
 
@@ -260,12 +260,12 @@ static func superflat(world_position : Vector3i) -> int:
 	var surface_boundary := 6
 
 	if world_position.y == surface_boundary:
-		return Resources.get_state_index(Resources.module.state.grass)
+		return 1
 
 	if world_position.y < sqrt(surface_boundary) * randf() * 2:
-		return Resources.get_state_index(Resources.module.state.stone)
+		return 3
 
 	if world_position.y < surface_boundary:
-		return Resources.get_state_index(Resources.module.state.dir)
+		return 2
 
-	return Resources.get_state_index(Resources.module.state.air)
+	return 0

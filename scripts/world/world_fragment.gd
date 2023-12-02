@@ -57,7 +57,7 @@ func render(world_position : Vector3i, parent : Node3D = null) -> void:
 				render_cube(cubes[x][y][z], Vector3i(x, y, z), world_position)
 
 	surface.generate_normals(false)
-	surface.set_material(Resources.MATERIAL)
+	surface.set_material(PackerSurface.MATERIAL)
 	surface.commit(mesh)
 	mesh_instance.set_mesh(mesh)
 	add_child(mesh_instance)
@@ -83,8 +83,8 @@ func refresh(world_position : Vector3i) -> void:
 
 
 func render_cube(state_index : int, relative_position : Vector3i, world_position : Vector3i) -> void:
-	var state := Resources.state(state_index)
-	if state == Resources.module.air: return
+	var state : Dictionary = PackerSurface.indexer[state_index]
+	if state == PackerSurface.air: return
 
 	var top_cube := relative_position + Vector3i(0, 1, 0)
 	var bot_cube := relative_position - Vector3i(0, 1, 0)
@@ -121,8 +121,8 @@ func create_face(respective_vertices : Array, relative_position : Vector3i, text
 	var c : Vector3i = VERTICES[respective_vertices[2]] + relative_position
 	var d : Vector3i = VERTICES[respective_vertices[3]] + relative_position
 
-	var size := Vector2(1.0 / Resources.RELATIVE_ATLAS_SIZE.x, 1.0 / Resources.RELATIVE_ATLAS_SIZE.y)
-	var offset := Vector2(texture_position) / Vector2(Resources.RELATIVE_ATLAS_SIZE)
+	var size := Vector2(1.0 / PackerSurface.ATLAS_SIZE_RELATIVE.x, 1.0 / PackerSurface.ATLAS_SIZE_RELATIVE.y)
+	var offset := Vector2(texture_position) / Vector2(PackerSurface.ATLAS_SIZE_RELATIVE)
 	var uv := [
 		offset + Vector2(0, 0),
 		offset + Vector2(0, size.y),
@@ -154,7 +154,7 @@ static func is_out_of_bounds(relative_position : Vector3i) -> bool:
 
 
 static func is_transparent(state_index : int) -> bool:
-	return Resources.state(state_index).is_transparent
+	return PackerSurface.indexer[state_index].is_transparent
 
 
 static func rotate_uv(default_uv_array : Array, cube_world_position : Vector3i) -> Array:

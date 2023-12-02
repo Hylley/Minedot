@@ -1,8 +1,17 @@
 extends Node
-class_name Surface
+class_name packer_surface
+
+const air = { # Air block must always be present, and must always be at index 0
+	'name'          : "Air block",
+	'index'			: 0,
+	'is_transparent': true,
+	'is_indexable'  : false,
+	'is_stackable'  : false
+}
+
+var indexer := [air] # List of pointers to all placeables in the game
 
 var MATERIAL := StandardMaterial3D.new()
-var indexer := [] # List of pointers to all placeables dicts in the game
 var TILE_SIZE := 0
 var ATLAS_SIZE : Vector2i
 var ATLAS_SIZE_RELATIVE : Vector2i
@@ -11,16 +20,7 @@ var ATLAS_SIZE_RELATIVE : Vector2i
 const ATLAS_FORMAT = Image.FORMAT_RGBA8
 
 func _init() -> void: # Init is always called before on_ready
-
-	indexer.append({ # Air block must always be present, and must always be at index 0
-		'name'          : "Air block",
-		'index'			: 0,
-		'is_transparent': true,
-		'is_indexable'  : false,
-		'is_stackable'  : false
-	})
-
-	ResourcePacker.new_module_loaded.connect(on_new_module_loaded)
+	Packer.new_module_loaded.connect(on_new_module_loaded)
 
 
 func on_new_module_loaded(module_body : Dictionary) -> void:
@@ -35,7 +35,7 @@ func on_new_module_loaded(module_body : Dictionary) -> void:
 
 
 func update_material() -> void:
-	MATERIAL.set_texture(BaseMaterial3D.TEXTURE_ALBEDO, generate_atlas())
+	MATERIAL.set_texture(BaseMaterial3D.TEXTURE_ALBEDO, update_atlas())
 	MATERIAL.set_texture_filter(BaseMaterial3D.TEXTURE_FILTER_NEAREST)
 	MATERIAL.set_transparency(BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR)
 	MATERIAL.set_specular(0)
@@ -43,7 +43,7 @@ func update_material() -> void:
 	MATERIAL.set_ao_light_affect(1)
 
 
-func generate_atlas() -> Texture2D:
+func update_atlas() -> Texture2D:
 	var texture_set         := {}
 	var positioned_textures := {}
 	var full_image_size     := Vector2i(1, 1)
@@ -82,7 +82,7 @@ func generate_atlas() -> Texture2D:
 		var texture_orgin : String = positioned_textures[position].origin
 
 		var tile := Image.new()
-		tile.load_png_from_buffer(Packer.unzip(texture_orgin, 'assets/' + texture_path))
+		tile.load_png_from_buffer(packer.unzip(texture_orgin, 'assets/' + texture_path))
 		tile.convert(ATLAS_FORMAT)
 
 		full_image.blit_rect(tile, tile.get_used_rect(), position * TILE_SIZE)
