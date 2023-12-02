@@ -45,6 +45,9 @@ func update_material() -> void:
 
 
 func update_atlas() -> Texture2D:
+	# This has a problem tho. If one of the surface packs loaded has tiles bigger than the others,
+	# there might me weird glitches in the textures. Note to fix that later.
+
 	var positioned_textures := {}
 	@warning_ignore('integer_division')
 	var full_image_size := Vector2i(1, 1) if texture_atlas == null else Vector2i(texture_atlas.get_width() / TILE_SIZE, texture_atlas.get_height() / TILE_SIZE)
@@ -86,7 +89,6 @@ func update_atlas() -> Texture2D:
 
 		full_image.blit_rect(tile, tile.get_used_rect(), position * TILE_SIZE)
 
-
 	texture_atlas = ImageTexture.create_from_image(full_image)
 	@warning_ignore('integer_division')
 	ATLAS_SIZE_RELATIVE =  Vector2i(texture_atlas.get_width() / TILE_SIZE, texture_atlas.get_height() / TILE_SIZE)
@@ -94,6 +96,12 @@ func update_atlas() -> Texture2D:
 
 
 static func next(_head : Vector2i) -> Vector2i:
+	# This algorithm iterate throug ha grid-like scenario staring from the
+	# corners and going to the center:
+	#  |X| | |     |X| | |     |X|X| |     |X|X| |     |X|X| |     |X|X|X|
+	#  | | | |  →  |X| | |  →  |X| | |  →  |X|X| |  →  |X|X| |  →  |X|X| | ...
+	#  | | | |     | | | |     | | | |     | | | |     |X| | |     |X| | |
+
 	if _head.x == _head.y:
 		return Vector2i(0, _head.y + 1)
 	elif _head.x < _head.y:
