@@ -18,4 +18,5 @@ mono_crash.*.json
 *.psd
 build/
 mods/
-.mod
+.spack
+.dpack
