@@ -18,6 +18,8 @@ var ATLAS_SIZE_RELATIVE : Vector2i
 
 # Settings
 const ATLAS_FORMAT = Image.FORMAT_RGBA8
+var texture_atlas : ImageTexture
+var head = Vector2i(0, 0)
 
 func _init() -> void: # Init is always called before on_ready
 	Packer.new_module_loaded.connect(on_new_module_loaded)
@@ -44,51 +46,59 @@ func update_material() -> void:
 
 
 func update_atlas() -> Texture2D:
-	var texture_set         := {}
 	var positioned_textures := {}
-	var full_image_size     := Vector2i(1, 1)
+	@warning_ignore('integer_division')
+	var full_image_size := Vector2i(1, 1) if texture_atlas == null else Vector2i(texture_atlas.get_width() / TILE_SIZE, texture_atlas.get_height() / TILE_SIZE)
 
 	for placeable in indexer:
 		if not 'textures' in placeable: continue
-		for value in placeable.textures.values():
-			texture_set[value] = placeable.origin
 
-	var iteration := 1
-	while texture_set.size() > 0:
-		var avaliable_positions := [ Vector2i(0, 0) ] if iteration == 1 else []
+		for face in placeable.textures:
+			if typeof(placeable.textures[face]) == TYPE_VECTOR2I: continue
 
-		for i in range(iteration):
-			avaliable_positions.append(Vector2i(i, iteration))
-			avaliable_positions.append(Vector2i(iteration, i))
-		avaliable_positions.append(Vector2i(iteration, iteration))
+			var texture_path : String = placeable.textures[face]
+			var origin_path : String = placeable.origin
+			var full_path : String = origin_path + '-' + texture_path
 
-		while avaliable_positions.size() > 0:
-			if texture_set.size() <= 0: break
+			if not full_path in positioned_textures:
+				positioned_textures[full_path] = head
+				head = packer_surface.next(head)
 
-			var texture  : String   = texture_set.keys()[0]
-			var position : Vector2i = avaliable_positions.pop_front()
-			positioned_textures[position] = {'path' : texture, 'origin' : texture_set[texture]}
-			texture_set.erase(texture)
+				if head.x > full_image_size.x: full_image_size.x = head.x + 1
+				if head.y > full_image_size.y: full_image_size.y = head.y + 1
 
-			if position.x + 1 > full_image_size.x: full_image_size.x = position.x + 1
-			if position.y + 1 > full_image_size.y: full_image_size.y = position.y + 1
-
-		iteration += 1
+			placeable.textures[face] = positioned_textures[full_path]
 
 	var full_image = Image.create(full_image_size.x * TILE_SIZE, full_image_size.y * TILE_SIZE, false, ATLAS_FORMAT)
 
-	for position in positioned_textures:
-		var texture_path  : String = positioned_textures[position].path
-		var texture_orgin : String = positioned_textures[position].origin
+	if texture_atlas != null:
+		var image := texture_atlas.get_image()
+		full_image.blit_rect(image, image.get_used_rect(), Vector2i(0, 0))
+
+	for texture in positioned_textures:
+		var position : Vector2i = positioned_textures[texture]
+		var full_path : PackedStringArray = texture.split('-')
+		var origin_path  : String = full_path[0]
+		var texture_path : String = full_path[1]
 
 		var tile := Image.new()
-		tile.load_png_from_buffer(packer.unzip(texture_orgin, 'assets/' + texture_path))
+		tile.load_png_from_buffer(packer.unzip(origin_path, 'assets/' + texture_path))
 		tile.convert(ATLAS_FORMAT)
 
 		full_image.blit_rect(tile, tile.get_used_rect(), position * TILE_SIZE)
 
 
-	return ImageTexture.create_from_image(full_image)
+	texture_atlas = ImageTexture.create_from_image(full_image)
+	return texture_atlas
+
+
+static func next(_head : Vector2i) -> Vector2i:
+	if _head.x == _head.y:
+		return Vector2i(0, _head.y + 1)
+	elif _head.x < _head.y:
+		return Vector2i(_head.y, _head.x)
+	else:
+		return Vector2i(_head.y +  1, _head.x)
 
 
 func get_state(index : int) -> Dictionary:
